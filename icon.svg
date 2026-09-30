@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<title>Мигрень — иконка приложения</title>
+<desc>Векторная реконструкция утверждённой концепции. Редактируемые фон, кольцо и точка. Квадратный мастер без внешних полей.</desc>
+<defs>
+<radialGradient id="coral" cx="100%" cy="22%" r="95%"><stop offset="0" stop-color="#FF9F96"/><stop offset="0.42" stop-color="#FFB6A5" stop-opacity="0.85"/><stop offset="1" stop-color="#FFB6A5" stop-opacity="0"/></radialGradient>
+<linearGradient id="lime" x1="0" y1="0" x2="0.12" y2="1"><stop offset="0.32" stop-color="#E1FF66" stop-opacity="0"/><stop offset="0.75" stop-color="#E1FF66" stop-opacity="0.68"/><stop offset="1" stop-color="#E1FF66"/></linearGradient>
+</defs>
+<g id="background"><rect width="1024" height="1024" fill="#F9F7EF"/><rect width="1024" height="1024" fill="url(#coral)"/><rect width="1024" height="1024" fill="url(#lime)"/></g>
+<g id="symbol" fill="#141514"><path id="ring" d="M 426.043,240.846 A 294 294 0 1 0 766.611,375.000 L 688.669,420.000 A 204 204 0 1 1 452.356,326.914 Z"/><circle id="dot" cx="658" cy="280" r="65"/></g>
+</svg>
