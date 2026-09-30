@@ -153,7 +153,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sheet-bg{position:fixed;inset:0;background:rgba(20,20,20,.35);backdrop-filter:blur(4px);z-index:10;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:520px;max-height:94%;overflow:auto;border-radius:34px 34px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
 .sheet > *{flex-shrink:0}
-.grab{width:40px;height:5px;border-radius:3px;background:var(--ink-3);margin:0 auto 2px}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--ink-3);margin:0 auto 2px;position:relative}
+.grab::after{content:"";position:absolute;left:-60px;right:-60px;top:-14px;bottom:-14px}
 .sheet h2{font-family:var(--display);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:-.03em;margin:0;line-height:1}
 .field{display:flex;flex-direction:column;gap:10px;min-width:0}
 .times{display:grid;grid-template-columns:1fr;gap:12px}
@@ -217,6 +218,21 @@ pre.report{white-space:pre-wrap;font-family:var(--font);font-size:12.5px;backgro
 .x svg{width:12px;height:12px}
 .pillrow{display:grid;grid-template-columns:22px minmax(0,1.5fr) minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);border-radius:18px;padding:8px 8px 8px 12px}
 .pillrow svg{width:20px;height:20px}
+.chip.sm{padding:6px 11px;font-size:13px}
+.dayrow{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:center}
+.dayrow .dl{font-size:12px;color:var(--ink-2)}
+.cal .d.ck::before{content:"";position:absolute;top:3px;width:4px;height:4px;border-radius:50%;background:var(--ink-2)}
+.wxline{font-size:13px;color:var(--ink-2);background:var(--card);border-radius:18px;padding:10px 14px}
+.bar2{position:relative;height:8px;border-radius:4px;background:var(--card2);overflow:visible}
+.bar2 i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#f0a15a,#ec7aa0)}
+.bar2 u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);border-radius:1px}
+.fillbtn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:9px 13px 9px 15px}
+.hero .tag{white-space:nowrap}
+@media (max-width:374px){.hero .tag{letter-spacing:.08em;padding:4px 9px}.fillbtn{font-size:12.5px;padding:8px 11px 8px 13px}}
+.fillbtn svg{width:14px;height:14px}
+.card.daydone{background:color-mix(in srgb,var(--lime) 38%,var(--card))}
+.dcheck{width:38px;height:38px;border-radius:50%;background:#141414;color:var(--lime);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.dcheck svg{width:18px;height:18px}
 .addopt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:8px}
 .addopt input{padding:9px 12px;border-radius:12px;font-size:14px}
 .optrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);border-radius:16px;padding:8px 8px 8px 14px;font-size:15px}
@@ -295,6 +311,8 @@ input[type=datetime-local]::-webkit-date-and-time-value{text-align:left}
 const SYMPTOMS=["Тошнота","Рвота","Светобоязнь","Звукобоязнь","Непереносимость запахов","Головокружение","Пульсирующая боль","Усиление при движении"];
 const TRIGGERS=["Стресс","Недосып","Пересып","Пропуск еды","Алкоголь","Кофеин","Погода","Долго у экрана","Менструация","Духота","Яркий свет","Физнагрузка","Обезвоживание"];
 const SIDES=["Слева","Справа","С обеих сторон","Лоб","Затылок/шея","Вокруг глаза"];
+const AURA_TYPES=["Речевая","Зрительная","Чувствительная"];
+const auraText=a=>a.aura?"аура"+((a.auraTypes||[]).length?" ("+a.auraTypes.map(x=>x.toLowerCase()).join(", ")+")":""):"";
 const EFFECTS=["Помогло","Частично","Не помогло"];
 const MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 const MONTHS_G=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
@@ -352,7 +370,7 @@ const I18N={
 "Сейчас":"Now","Дневник":"Diary","Анализ":"Analysis","Таблетки":"Pills","Мигрень":"Migraine","Демо":"Demo","Закрыть":"Close",
 "Пример с вымышленными данными. Нажимайте что угодно: изменения не сохраняются.":"Sample with made-up data. Tap anything: changes aren’t saved.",
 "идёт сейчас":"in progress","идёт":"in progress","сегодня":"today","вчера":"yesterday","назад":"ago","без боли":"no pain","боль":"pain","мигрень":"migraine","таблетка":"pill","таблеток:":"pills:",
-"Дневник мигрени":"Migraine Diary","Свой симптом":"Your own symptom","Свой триггер":"Your own trigger","Мои симптомы":"My symptoms","Мои триггеры":"My triggers","Добавить симптом":"Add a symptom","Добавить триггер":"Add a trigger","Вернуть стандартный список":"Restore default list","Такой пункт уже есть":"Already in the list","Впишите название":"Type a name","Список пуст. Добавьте первый пункт ниже.":"The list is empty. Add the first item below.","Удаление из списка не меняет старые записи: там всё останется как было.":"Removing an item doesn’t change past entries.","Стандартный список возвращён":"Default list restored","Добавлено":"Added","демо":"demo","не помогло":"didn’t help","Помогло":"Helped","Частично":"Partly","Не помогло":"Didn’t help","нет":"no","да":"yes",
+"Дневник мигрени":"Migraine Diary","День отмечен":"Day logged","Изменить":"Edit","Готово":"Done","Заполнить подробно":"Add details","Заполнить":"Add details","Сохранить PDF с календарём":"Save PDF with calendar","Не удалось создать PDF":"Couldn’t create the PDF","Дневник головной боли":"Headache diary","стр.":"p.","Календарь":"Calendar","Закономерности":"Patterns","Препарат":"Drug","Приёмов":"Doses","Локализация":"Location","Период:":"Period:","составлен":"created","ФИО:":"Name:","как прошёл день":"day log","месячные":"period","кофе":"coffee","отмечено":"logged","Речевая":"Speech","Зрительная":"Visual","Чувствительная":"Sensory","речевая":"speech","зрительная":"visual","чувствительная":"sensory","Как прошёл день?":"How was your day?","✓ отмечено":"✓ logged","Отметить вчера":"Log yesterday","Отметка дня":"Day log","Сон":"Sleep","Стресс":"Stress","Вода":"Water","Кофе":"Coffee","Цикл":"Cycle","Месячные":"Period","Мало":"Little","Норма":"Normal","Много":"A lot","Низкий":"Low","Средний":"Medium","Высокий":"High","Что бывает перед мигренью":"What comes before a migraine","Погода и давление":"Weather and pressure","Включить":"Turn on","Давление падало":"Pressure falling","Давление росло":"Pressure rising","Стабильно":"Stable","мм рт. ст.":"mmHg","за сутки":"in 24 h","влажность":"humidity","Давление":"Pressure","давление":"pressure","Нет доступа к геопозиции":"No location access","Погода включена":"Weather is on","Мигрень уже идёт":"A migraine is already in progress","Идущей мигрени нет":"No migraine in progress","в среднем":"on average","дней отмечено":"days logged","Свой симптом":"Your own symptom","Свой триггер":"Your own trigger","Мои симптомы":"My symptoms","Мои триггеры":"My triggers","Добавить симптом":"Add a symptom","Добавить триггер":"Add a trigger","Вернуть стандартный список":"Restore default list","Такой пункт уже есть":"Already in the list","Впишите название":"Type a name","Список пуст. Добавьте первый пункт ниже.":"The list is empty. Add the first item below.","Удаление из списка не меняет старые записи: там всё останется как было.":"Removing an item doesn’t change past entries.","Стандартный список возвращён":"Default list restored","Добавлено":"Added","демо":"demo","не помогло":"didn’t help","Помогло":"Helped","Частично":"Partly","Не помогло":"Didn’t help","нет":"no","да":"yes",
 "Пн":"Mo","Вт":"Tu","Ср":"We","Чт":"Th","Пт":"Fr","Сб":"Sa","Вс":"Su",
 "Тошнота":"Nausea","Рвота":"Vomiting","Светобоязнь":"Light sensitivity","Звукобоязнь":"Sound sensitivity","Непереносимость запахов":"Smell sensitivity","Головокружение":"Dizziness","Пульсирующая боль":"Throbbing pain","Усиление при движении":"Worse with movement",
 "Стресс":"Stress","Недосып":"Too little sleep","Пересып":"Oversleeping","Пропуск еды":"Skipped meal","Алкоголь":"Alcohol","Кофеин":"Caffeine","Погода":"Weather","Долго у экрана":"Screen time","Менструация":"Menstruation","Духота":"Stuffy air","Яркий свет":"Bright light","Физнагрузка":"Exercise","Обезвоживание":"Dehydration",
@@ -388,6 +406,7 @@ let attacks=[]; let pills=null; let tab="home"; let calMonth=new Date(); calMont
 let store=null; let mode="local"; let editing=null; let confirmDel=false; let showTimes=false;
 let sheetKind=null; let pillsDraft=null; let backToForm=false; let timeEdit=null;
 const LS="migraine-diary-v1", LSP="migraine-pills-v1", LSL="migraine-lists-v1";
+let days={}; const LSD="migraine-days-v1", LSG="migraine-geo-v1", LSWB="migraine-wxbase-v1";
 let lists=null; let listKey=null; let listDraft=null;
 const LIST_DEF={symptoms:SYMPTOMS,triggers:TRIGGERS};
 const LIST_TXT={symptoms:{title:"Мои симптомы",ph:"Свой симптом",add:"Добавить симптом"},triggers:{title:"Мои триггеры",ph:"Свой триггер",add:"Добавить триггер"}};
@@ -492,8 +511,8 @@ const Head3D={
 };
 
 /* ---------- storage ---------- */
-function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify(attacks)); if(pills) localStorage.setItem(LSP,JSON.stringify(pills)); if(lists) localStorage.setItem(LSL,JSON.stringify(lists)); }catch(e){} }
-function loadLocal(){ try{ const v=JSON.parse(localStorage.getItem(LS)||"[]"); if(Array.isArray(v)) attacks=v; const p=JSON.parse(localStorage.getItem(LSP)||"null"); if(Array.isArray(p)) pills=p; const l=JSON.parse(localStorage.getItem(LSL)||"null"); if(l&&typeof l==="object") lists=l; }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify(attacks)); if(pills) localStorage.setItem(LSP,JSON.stringify(pills)); if(lists) localStorage.setItem(LSL,JSON.stringify(lists)); localStorage.setItem(LSD,JSON.stringify(days)); }catch(e){} }
+function loadLocal(){ try{ const v=JSON.parse(localStorage.getItem(LS)||"[]"); if(Array.isArray(v)) attacks=v; const p=JSON.parse(localStorage.getItem(LSP)||"null"); if(Array.isArray(p)) pills=p; const l=JSON.parse(localStorage.getItem(LSL)||"null"); if(l&&typeof l==="object") lists=l; const dd=JSON.parse(localStorage.getItem(LSD)||"null"); if(dd&&typeof dd==="object") days=dd; }catch(e){} }
 async function initStore(){
   if(!window.claude?.use){ render(); return; }
   try{
@@ -507,11 +526,13 @@ async function initStore(){
       const docs=snap.docs.map(d=>d.data()).filter(Boolean);
       const cloud=docs.filter(x=>x.kind==="attack");
       const set=docs.find(x=>x.kind==="settings");
+      const cd={}; docs.filter(x=>x.kind==="day"&&x.key).forEach(x=>{ const {kind,key,...v}=x; cd[key]=v; });
       if(first){ first=false;
         const ids=new Set(cloud.map(a=>a.id)); const pending=attacks.filter(a=>!ids.has(a.id));
         pending.forEach(a=>col.doc(a.id).set({...a,kind:"attack"}).catch(()=>{})); attacks=cloud.concat(pending);
+        Object.entries(days).forEach(([k,v])=>{ if(!cd[k]){ cd[k]=v; col.doc("day-"+k).set({kind:"day",key:k,...v}).catch(()=>{}); } }); days=cd;
         if(set&&Array.isArray(set.pills)) pills=set.pills; if(set&&set.lists) lists=set.lists; if((!set&&(pills||lists))||(set&&!set.lists&&lists)) col.doc("settings").set(settingsDoc()).catch(()=>{});
-      } else { attacks=cloud; if(set&&Array.isArray(set.pills)) pills=set.pills; if(set&&set.lists) lists=set.lists; }
+      } else { attacks=cloud; days=cd; if(set&&Array.isArray(set.pills)) pills=set.pills; if(set&&set.lists) lists=set.lists; }
       saveLocal(); if(!sheetKind) render();
     },()=>{ mode="local"; store=null; render(); });
   }catch(e){ render(); }
@@ -607,7 +628,7 @@ function viewHome(){
   const dateLine=`${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS_G[now.getMonth()]} ${now.getFullYear()}`;
   let hero;
   if(on){ const d=new Date(on.start); const mins=Math.floor(dur(on)/60000);
-    hero=`<div class="card hero pain" style="gap:16px"><div class="spread"><span class="tag">● Мигрень идёт</span><button class="circ sm" data-act="edit" data-id="${on.id}" aria-label="Подробнее">${ARROW}</button></div>
+    hero=`<div class="card hero pain" style="gap:16px"><div class="spread"><span class="tag">● Мигрень идёт</span><button class="btn sm glass fillbtn" data-act="edit" data-id="${on.id}" aria-label="Заполнить подробно">Заполнить${ARROW}</button></div>
       <div><div class="dotnum num">${Math.floor(mins/60)}<span class="colon">:</span>${pad(mins%60)}</div><div class="hlab">началась ${fmtWhen(d)} · <button class="linkbtn" data-act="time" data-id="${on.id}">изменить время</button></div></div>
       <div style="display:flex;flex-direction:column;gap:8px"><span class="qlab">Сила боли${hasI(on.intensity)?" · "+lvlWord(on.intensity):""}</span>
         <div class="qscale">${[1,2,3,4,5,6,7,8,9,10].map(i=>`<button data-qint="${i}" data-id="${on.id}" aria-pressed="${on.intensity===i}" style="${on.intensity===i?"background:"+lvlColor(i):""}">${i}</button>`).join("")}</div></div>
@@ -615,14 +636,14 @@ function viewHome(){
       <div class="swipe stop" data-swipe="end" data-id="${on.id}" role="button" tabindex="0" aria-label="Мигрень закончилась. Сдвиньте вправо или нажмите Enter"><span class="swipe-fill"></span><span class="swipe-text">Мигрень закончилась</span><span class="chev" aria-hidden="true">›››</span><span class="knob"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="6" y="6" width="8" height="8" rx="1.5"/></svg></span></div></div>`;
   } else {
     const last=sorted()[0]; const since=last?Math.floor((Date.now()-new Date(last.end||last.start))/864e5):null;
-    hero=`<div class="card hero calm"><div class="spread"><span class="eyebrow">Без мигрени</span>${last?`<button class="circ sm" data-act="tab" data-tab="log" aria-label="Дневник">${ARROW}</button>`:""}</div>
+    hero=`<div class="card hero calm"><div class="spread"><span class="eyebrow">Без мигрени</span></div>
       <div><div class="dotnum num">${last?since:"—"}</div><div class="hlab">${last?plural(since,"день","дня","дней")+" с последнего приступа":"Записей пока нет"}</div></div>
       <div class="swipe" data-swipe="start" role="button" tabindex="0" aria-label="Мигрень началась. Сдвиньте вправо или нажмите Enter"><span class="swipe-fill"></span><span class="swipe-text">Мигрень началась</span><span class="chev" aria-hidden="true">›››</span><span class="knob"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10h11M11 6l4 4-4 4"/></svg></span></div>
       <div class="muted" style="font-size:13px">Сдвиньте кружок вправо, время запишется само. <button class="linkbtn" data-act="past">Записать прошедшую</button></div></div>`;
   }
   const dA=s.list.length-prev.list.length;
   const medState=s.medDays>=10?["Много","var(--bad)"]:s.medDays>=7?["Близко к порогу","var(--warn)"]:["В норме","var(--ok)"];
-  return `<div class="greet"><h1>${greeting()}</h1><div class="date">${dateLine}</div></div>${hero}
+  return `<div class="greet"><h1>${greeting()}</h1><div class="date">${dateLine}</div></div>${hero}${on?"":dayCard()}
    <div class="card"><div class="t">Последние 16 дней</div><button class="circ sm arrow" data-act="tab" data-tab="stats" aria-label="Анализ">${ARROW}</button>
      <div class="bignum num">${s.headDays}<small>${plural(s.headDays,"день","дня","дней")} с болью за 30</small></div>${ticks(16)}</div>
    <div class="grid2">
@@ -631,22 +652,28 @@ function viewHome(){
        <div class="sev-pane"><div class="midnum num" style="font-size:30px">${s.avgI?s.avgI.toFixed(1):"—"}<sup>/10</sup></div><div class="sev-mut" style="font-size:12px">средняя сила</div></div></div>
    </div>
    ${s.medDays>=10?`<div class="card" style="gap:6px"><div class="lab" style="color:var(--bad)">Обратите внимание</div><div class="note">Обезболивающие были в ${s.medDays} ${plural(s.medDays,"день","дня","дней")} из 30. Приём 10 и более дней в месяц может сам поддерживать головную боль. Стоит обсудить с неврологом.</div></div>`:""}
+   ${on?dayCard():""}
    ${attacks.length?`<div class="sec"><span class="eyebrow">Недавние</span><button class="btn sm" data-act="tab" data-tab="log">Все</button></div><div class="list">${sorted().slice(0,3).map(itemHtml).join("")}</div>`:""}`;
 }
 function itemHtml(a){
   const d=new Date(a.start); const meds=(a.meds||[]).map(medLabel).filter(Boolean).join(", ");
-  const meta=[zonesText(a),a.aura?"аура":""].filter(Boolean).join(" · ");
+  const meta=[zonesText(a),auraText(a),wxFall(a.wx)?"↓ давление":wxRise(a.wx)?"↑ давление":""].filter(Boolean).join(" · ");
   return `<button class="item" data-act="edit" data-id="${a.id}"><div class="lvl num" style="background:${lvlColor(a.intensity)}">${hasI(a.intensity)?a.intensity:"?"}</div>
    <div style="min-width:0;display:flex;flex-direction:column;gap:2px"><div class="title">${fmtDate(d)}, ${fmtTime(d)}</div>
    <div class="meta">${a.end?fmtDur(dur(a)):"идёт сейчас"}${meta?" · "+esc(meta):""}</div>
    ${meds?`<div class="meta" style="display:flex;gap:5px;align-items:center"><span style="width:14px;height:14px;display:inline-flex">${PILL}</span>${esc(meds)}</div>`:""}</div><span class="go">${ARROW}</span></button>`;
 }
+function dayItemHtml(k){ const d=days[k]||{}; const dt=new Date(k+"T12:00");
+  const parts=DAY_F.filter(f=>d[f.k]).map(f=>f.k==="period"?"месячные":f.k==="coffee"?"кофе: "+d[f.k]:f.l+": "+d[f.k].toLowerCase());
+  return `<button class="item" data-dayopen="${k}" style="background:color-mix(in srgb,var(--card) 55%,transparent)"><div class="lvl" style="background:var(--card2);width:48px;height:48px"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="4.5" width="13" height="12" rx="2.5"/><path d="M3.5 8.5h13M7 3v3M13 3v3M7.5 12.2l1.8 1.8 3.4-3.6"/></svg></div>
+   <div style="min-width:0;display:flex;flex-direction:column;gap:2px"><div class="title">${fmtDate(dt)} · <span class="muted" style="font-weight:400">как прошёл день</span></div><div class="meta">${esc(parts.join(" · "))}</div></div><span class="go">${ARROW}</span></button>`; }
 function viewLog(){
-  const list=sorted();
-  let out=`<div class="greet"><h1>Дневник</h1><div class="date">${list.length} ${plural(list.length,"запись","записи","записей")}</div></div>`;
-  if(!list.length) return out+`<div class="card empty"><div class="muted">Здесь будут все приступы. Нажмите «Мигрень началась» на главном экране, когда начнётся приступ, или запишите прошедший.</div><button class="btn dark" data-act="past">Записать прошедший приступ</button></div>`;
+  const list=sorted(); const dk=Object.keys(days).filter(dayFilled);
+  let out=`<div class="greet"><h1>Дневник</h1><div class="date">${list.length} ${plural(list.length,"запись","записи","записей")}${dk.length?` · ${dk.length} ${plural(dk.length,"день","дня","дней")} отмечено`:""}</div></div>`;
+  if(!list.length&&!dk.length) return out+`<div class="card empty"><div class="muted">Здесь будут все приступы. Нажмите «Мигрень началась» на главном экране, когда начнётся приступ, или запишите прошедший.</div><button class="btn dark" data-act="past">Записать прошедший приступ</button></div>`;
+  const rows=list.map(a=>({t:new Date(a.start),html:()=>itemHtml(a)})).concat(dk.map(k=>({t:new Date(k+"T23:59:59"),html:()=>dayItemHtml(k)}))).sort((a,b)=>b.t-a.t);
   let cur="";
-  list.forEach(a=>{ const d=new Date(a.start); const k=MONTHS[d.getMonth()]+" "+d.getFullYear(); if(k!==cur){ if(cur) out+=`</div>`; cur=k; out+=`<div class="sec"><span class="eyebrow">${k}</span></div><div class="list">`; } out+=itemHtml(a); });
+  rows.forEach(r=>{ const d=r.t; const k=MONTHS[d.getMonth()]+" "+d.getFullYear(); if(k!==cur){ if(cur) out+=`</div>`; cur=k; out+=`<div class="sec"><span class="eyebrow">${k}</span></div><div class="list">`; } out+=r.html(); });
   return out+"</div>";
 }
 function viewStats(){
@@ -655,7 +682,7 @@ function viewStats(){
   let cells=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(x=>`<div class="dow">${x}</div>`).join("");
   for(let i=0;i<first;i++) cells+=`<div></div>`;
   for(let d=1;d<=n;d++){ const k=`${y}-${pad(m+1)}-${pad(d)}`; const had=k in ms.dayMax; const mc=ms.medCount[k]||0;
-    cells+=`<div class="d num ${had?lvlClass(ms.dayMax[k]):""} ${k===today?"today":""}" ${(had||mc)?`data-day="${k}" role="button" tabindex="0" style="cursor:pointer"`:""} title="${had?(ms.dayMax[k]?"боль "+ms.dayMax[k]+"/10":"мигрень"):""}${mc?", таблеток: "+mc:""}">${d}${mc?`<span class="pb">${PILL}${mc>1?`<b>${mc}</b>`:""}</span>`:""}</div>`; }
+    cells+=`<div class="d num ${had?lvlClass(ms.dayMax[k]):""} ${k===today?"today":""} ${dayFilled(k)?"ck":""}" ${(had||mc||k<=today)?`data-day="${k}" role="button" tabindex="0" style="cursor:pointer"`:""} title="${had?(ms.dayMax[k]?"боль "+ms.dayMax[k]+"/10":"мигрень"):""}${mc?", таблеток: "+mc:""}">${d}${mc?`<span class="pb">${PILL}${mc>1?`<b>${mc}</b>`:""}</span>`:""}</div>`; }
   const s=summary(90);
   const trig=Object.entries(s.trig).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const meds=Object.entries(s.meds).sort((a,b)=>b[1].n-a[1].n);
@@ -672,6 +699,8 @@ function viewStats(){
    ${(()=>{ const zs=Object.entries(s.zc).sort((a,b)=>b[1]-a[1]); return `<div class="card"><div class="t">Где болит чаще</div>${zs.length?zs.slice(0,6).map(([z,c])=>`<div style="display:flex;flex-direction:column;gap:6px"><div class="spread" style="font-size:13px"><span>${esc(z)}</span><span class="muted num">${c} из ${s.list.length}</span></div><div style="height:8px;border-radius:4px;background:var(--card2);overflow:hidden"><i style="display:block;height:100%;width:${c/Math.max(1,s.list.length)*100}%;border-radius:4px;background:linear-gradient(90deg,#f0a15a,#ec7aa0)"></i></div></div>`).join(""):`<div class="muted" style="font-size:14px">Отмечайте зоны на голове в подробностях приступа.</div>`}</div>`; })()}
    <div class="card" style="background:var(--card2)"><div class="t">Частые триггеры</div>
      ${trig.length?trig.map(([t,c])=>`<div style="display:flex;flex-direction:column;gap:6px"><div class="spread" style="font-size:13px"><span>${esc(t)}</span><span class="muted num">${c} из ${s.list.length}</span></div><div class="meter"><div class="fill" style="width:${Math.max(12,c/Math.max(1,s.list.length)*100)}%"></div><div class="rest"></div></div></div>`).join(""):`<div class="muted" style="font-size:14px">Отмечайте триггеры в подробностях приступа, и здесь станет видно, что чаще совпадает с мигренью.</div>`}</div>
+   ${dayAnalysisCard()}
+   ${wxCard()}
    <div class="card darkc"><div class="t">Что помогает</div>
      ${meds.length?meds.map(([nm,v])=>{ const tot=v.ok+v.part+v.no||1; return `<div style="display:flex;flex-direction:column;gap:6px"><div class="spread" style="font-size:14px"><span>${esc(nm)}</span><span class="muted num">×${v.n}</span></div>
        <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--on-dark) 20%,transparent);gap:2px"><i style="width:${v.ok/tot*100}%;background:var(--lime)"></i><i style="width:${v.part/tot*100}%;background:var(--p3)"></i><i style="width:${v.no/tot*100}%;background:var(--p5)"></i></div></div>`; }).join("")+`<div class="legend" style="color:inherit;opacity:.7"><span><i style="background:var(--lime)"></i>помогло</span><span><i style="background:var(--p3)"></i>частично</span><span><i style="background:var(--p5)"></i>нет</span></div>`:`<div class="muted" style="font-size:14px">Отмечайте таблетки и их эффект, чтобы сравнить, что работает лучше.</div>`}</div>`;
@@ -681,7 +710,7 @@ function viewStats(){
 function openSheet(kind,html){ sheetKind=kind; const same=kind===openSheet._last&&!!$("#sheet .sheet"); const sc=same?($("#sheet .sheet").scrollTop||0):0; openSheet._last=kind; $("#sheet").innerHTML=`<div class="sheet-bg${same?" noanim":""}" data-act="close-bg">${html}</div>`; const sh=$("#sheet .sheet"); if(sh){ if(same) sh.classList.add("noanim"); sh.scrollTop=sc; } }
 function closeSheet(){
   if((sheetKind==="pills"||sheetKind==="lists")&&backToForm&&editing){ backToForm=false; listKey=null; listDraft=null; renderForm(); return; }
-  listKey=null; listDraft=null;
+  listKey=null; listDraft=null; dayEdit=null;
   $("#sheet").innerHTML=""; sheetKind=null; openSheet._last=null; editing=null; timeEdit=null; render();
 }
 const closeBtn=`<button type="button" class="circ sm" data-act="close" aria-label="Закрыть">${XICON}</button>`;
@@ -705,6 +734,7 @@ function renderForm(){
    <div class="grab"></div>
    <div class="spread"><h2>${isNew?"Прошедший приступ":"Подробности"}</h2>${closeBtn}</div>
    ${timeBlock}
+   ${e.wx?`<div class="wxline">${esc(wxText(e.wx))}</div>`:""}
    <div class="card" style="gap:14px"><div class="spread"><span class="lab">Сила боли</span><div class="inten-read"><b class="num">${hasI(e.intensity)?e.intensity:"—"}</b><span class="muted">${lvlWord(e.intensity)}</span></div></div>
      <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(i=>`<button type="button" data-int="${i}" aria-pressed="${e.intensity===i}" aria-label="Сила ${i}" style="height:${30+i*8}px;${hasI(e.intensity)&&i<=e.intensity?`background:${lvlColor(i)};color:#141414`:""}">${i}</button>`).join("")}</div>
      <div class="scale-cap"><span>едва заметно</span><span>невыносимо</span></div></div>
@@ -717,7 +747,7 @@ function renderForm(){
        <div class="head-views">${[["front","Спереди"],["left","Слева"],["back","Сзади"],["right","Справа"]].map(([k,v])=>`<button type="button" data-hview="${k}">${v}</button>`).join("")}</div></div>
      <div class="zone-line">${e.zones.length?`Болит: <b>${esc(e.zones.join(", "))}</b>`:`<span class="muted">Зоны не выбраны</span>`}</div>
      <div class="chips">${ZONE_ORDER.map(i=>ZONES[i]).map(z=>`<button type="button" class="chip" aria-pressed="${e.zones.includes(z)}" data-zone="${esc(z)}">${esc(z)}</button>`).join("")}</div></div>
-   <div class="field"><span class="lab">Аура</span><div class="chips"><button type="button" class="chip" data-aura="1" aria-pressed="${!!e.aura}">Была аура</button></div></div>
+   <div class="field"><span class="lab">Аура</span><div class="chips">${AURA_TYPES.map(x=>`<button type="button" class="chip" data-auratype="${x}" aria-pressed="${(e.auraTypes||[]).includes(x)}">${x}</button>`).join("")}${e.aura&&!(e.auraTypes||[]).length?`<button type="button" class="chip" data-aura="1" aria-pressed="true">Была аура</button>`:""}</div></div>
    <div class="field"><div class="spread"><span class="lab">Симптомы</span><button type="button" class="linkbtn" style="font-size:13px" data-editlist="symptoms">Изменить список</button></div>${chipGroup("symptoms",getList("symptoms"))}<div class="addopt"><input type="text" id="add-symptoms" data-addinput="symptoms" placeholder="${LIST_TXT.symptoms.ph}" enterkeyhint="done" autocomplete="off"><button type="button" class="btn sm" data-addopt="symptoms">+ Добавить</button></div></div>
    <div class="field"><div class="spread"><span class="lab">Возможные триггеры</span><button type="button" class="linkbtn" style="font-size:13px" data-editlist="triggers">Изменить список</button></div>${chipGroup("triggers",getList("triggers"))}<div class="addopt"><input type="text" id="add-triggers" data-addinput="triggers" placeholder="${LIST_TXT.triggers.ph}" enterkeyhint="done" autocomplete="off"><button type="button" class="btn sm" data-addopt="triggers">+ Добавить</button></div></div>
    <div class="field"><label class="lab" for="f-note">Заметка</label><textarea id="f-note" placeholder="Что происходило, что помогло, самочувствие после">${esc(e.note)}</textarea></div>
@@ -781,17 +811,20 @@ function reportText(days=90){
   t+=`Приступов: ${list.length}\nДней с головной болью: ${s.headDays}\nДней с приёмом обезболивающих: ${s.medDays}\nСредняя интенсивность: ${s.avgI?s.avgI.toFixed(1):"—"}/10\nСредняя длительность: ${s.avgD!=null?fmtDur(s.avgD):"—"}\n`;
   const tr=Object.entries(s.trig).sort((a,b)=>b[1]-a[1]); if(tr.length) t+=`Частые триггеры: ${tr.map(([k,v])=>k+" ("+v+")").join(", ")}\n`;
   const md=Object.entries(s.meds); if(md.length) t+=`Лекарства: ${md.map(([k,v])=>`${k} ×${v.n} (помогло ${v.ok}, частично ${v.part}, нет ${v.no})`).join("; ")}\n`;
+  { const wl=list.filter(a=>a.wx); if(wl.length) t+=`Давление перед приступом (за сутки): падало ${wl.filter(a=>wxFall(a.wx)).length}, росло ${wl.filter(a=>wxRise(a.wx)).length}, стабильно ${wl.filter(a=>!wxFall(a.wx)&&!wxRise(a.wx)).length} из ${wl.length}\n`; }
+  { const st=dayStats(); if(st.n>=14){ const top=st.rows.filter(r=>r.r>st.base).slice(0,4); if(top.length) t+=`Перед мигренью чаще (дневник дня, ${st.n} дн.): ${top.map(r=>`${r.lab} ${Math.round(r.r*100)}%`).join(", ")}; в среднем ${Math.round(st.base*100)}%\n`; } }
   t+=`\nЗАПИСИ\n`;
-  list.forEach(a=>{ const d=new Date(a.start); t+=`• ${fmtDate(d)} ${fmtTime(d)} — ${hasI(a.intensity)?a.intensity+"/10":"сила не указана"}, ${a.end?fmtDur(dur(a)):"идёт"}${zonesText(a)?", "+zonesText(a):""}${a.aura?", аура":""}`;
+  list.forEach(a=>{ const d=new Date(a.start); t+=`• ${fmtDate(d)} ${fmtTime(d)} — ${hasI(a.intensity)?a.intensity+"/10":"сила не указана"}, ${a.end?fmtDur(dur(a)):"идёт"}${zonesText(a)?", "+zonesText(a):""}${a.aura?", "+auraText(a):""}`;
     if(a.symptoms?.length) t+=`; симптомы: ${a.symptoms.join(", ")}`; if(a.triggers?.length) t+=`; триггеры: ${a.triggers.join(", ")}`;
     if(a.meds?.length) t+=`; лекарства: ${a.meds.map(m=>`${medLabel(m)} в ${fmtTime(new Date(m.time||a.start))}${m.effect?" ("+m.effect.toLowerCase()+")":""}`).join(", ")}`;
+    if(a.wx) t+=`; давление ${toMM(a.wx.p)} мм (${a.wx.dp>0?"+":""}${toMM(a.wx.p)-toMM(a.wx.p-a.wx.dp)} за сутки)`;
     if(a.note) t+=`; ${a.note}`; t+="\n"; });
   return t;
 }
 function csv(){
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=[["Начало","Окончание","Длительность, мин","Сила","Локализация","Аура","Симптомы","Триггеры","Лекарства","Заметка"]];
-  sorted().reverse().forEach(a=>rows.push([toLocalInput(new Date(a.start)).replace("T"," "),a.end?toLocalInput(new Date(a.end)).replace("T"," "):"",a.end?Math.round(dur(a)/60000):"",hasI(a.intensity)?a.intensity:"",zonesText(a),a.aura?"да":"нет",(a.symptoms||[]).join("; "),(a.triggers||[]).join("; "),(a.meds||[]).map(m=>`${medLabel(m)} ${fmtTime(new Date(m.time||a.start))} ${m.effect||""}`.trim()).join("; "),a.note]));
+  const rows=[["Начало","Окончание","Длительность, мин","Сила","Локализация","Аура","Симптомы","Триггеры","Лекарства","Давление, мм рт. ст.","Изменение давления за сутки","Температура","Заметка"]];
+  sorted().reverse().forEach(a=>rows.push([toLocalInput(new Date(a.start)).replace("T"," "),a.end?toLocalInput(new Date(a.end)).replace("T"," "):"",a.end?Math.round(dur(a)/60000):"",hasI(a.intensity)?a.intensity:"",zonesText(a),a.aura?"да"+((a.auraTypes||[]).length?": "+a.auraTypes.join(", ").toLowerCase():""):"нет",(a.symptoms||[]).join("; "),(a.triggers||[]).join("; "),(a.meds||[]).map(m=>`${medLabel(m)} ${fmtTime(new Date(m.time||a.start))} ${m.effect||""}`.trim()).join("; "),a.wx?toMM(a.wx.p):"",a.wx?toMM(a.wx.p)-toMM(a.wx.p-a.wx.dp):"",a.wx?a.wx.t:"",a.note]));
   return "﻿"+rows.map((r,ri)=>r.map((c,i)=>q(ri>0&&i===r.length-1?c:tr(String(c??"")))).join(";")).join("\r\n");
 }
 let reportDays=90;
@@ -800,7 +833,8 @@ function openReport(){
    <div class="spread"><h2>Для врача</h2>${closeBtn}</div>
    <div class="chips">${[30,90,180].map(d=>`<button class="chip" aria-pressed="${d===reportDays}" data-rdays="${d}">${d} дней</button>`).join("")}</div>
    <pre class="report" id="report-text">${esc(reportText(reportDays))}</pre>
-   <div class="row"><button class="btn dark" data-act="copy">Скопировать текст</button><button class="btn" data-act="csv">Скачать таблицу</button></div>
+   <button class="save-btn" data-act="pdf"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3v10M6 9l4 4 4-4M4 16h12"/></svg>Сохранить PDF с календарём</button>
+   <div class="row"><button class="btn" data-act="copy">Скопировать текст</button><button class="btn" data-act="csv">Скачать таблицу</button></div>
    <div class="card" style="gap:10px"><span class="lab">Резервная копия</span><div class="muted" style="font-size:13px">Записи хранятся только на этом телефоне. Время от времени сохраняйте копию в «Файлы» или iCloud, чтобы ничего не потерять. ${backupAgo()}</div>
    <div class="row"><button class="btn" data-act="backup">Сохранить копию</button><button class="btn" data-act="restore">Восстановить из файла</button></div><input type="file" id="restore-file" accept=".json,application/json" hidden></div></div>`);
 }
@@ -828,11 +862,202 @@ function openBackupReminder(){
    <button type="button" class="save-btn" data-act="bk-now"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Сохранить копию</button>
    <button type="button" class="btn" data-act="bk-later" style="align-self:center">Напомнить через 3 дня</button></div>`);
 }
-function backupJSON(){ return JSON.stringify({app:"migraine-diary",version:1,saved:new Date().toISOString(),attacks,pills:getPills(),...(lists?{lists}:{})},null,1); }
+function backupJSON(){ return JSON.stringify({app:"migraine-diary",version:1,saved:new Date().toISOString(),attacks,pills:getPills(),...(lists?{lists}:{}),days},null,1); }
+/* ---------- weather ---------- */
+let geo=null; try{ geo=JSON.parse(localStorage.getItem(LSG)||"null"); }catch(e){}
+let wxCache=null, wxBusy=false;
+const toMM=h=>Math.round(h*0.750062);
+function getGeo(){ return new Promise(res=>{ if(!navigator.geolocation) return res(null); let done=false; const fin=v=>{ if(!done){ done=true; res(v); } }; setTimeout(()=>fin(null),10000);
+  navigator.geolocation.getCurrentPosition(p=>{ geo={lat:+p.coords.latitude.toFixed(2),lon:+p.coords.longitude.toFixed(2),t:Date.now()}; try{ localStorage.setItem(LSG,JSON.stringify(geo)); }catch(e){} fin(geo); },()=>fin(null),{maximumAge:6*36e5,timeout:9000,enableHighAccuracy:false}); }); }
+async function refreshGeo(){ try{ if(navigator.permissions){ const st=await navigator.permissions.query({name:"geolocation"}); if(st.state==="granted"&&(!geo||Date.now()-geo.t>6*36e5)) await getGeo(); } }catch(e){} return geo; }
+async function wxSeries(g){ const key=g.lat+","+g.lon; if(wxCache&&wxCache.key===key&&Date.now()-wxCache.at<20*6e4) return wxCache;
+  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.lat}&longitude=${g.lon}&hourly=pressure_msl,temperature_2m,relative_humidity_2m&past_days=92&forecast_days=1&timeformat=unixtime&timezone=auto`); if(!r.ok) throw 0;
+  const h=(await r.json()).hourly; wxCache={key,at:Date.now(),t:h.time,p:h.pressure_msl,tp:h.temperature_2m,hu:h.relative_humidity_2m};
+  let f=0,ri=0,n=0; for(let i=24;i<wxCache.t.length;i++){ if(wxCache.t[i]*1000>Date.now()) break; const d=wxCache.p[i]-wxCache.p[i-24]; if(d==null||isNaN(d)) continue; n++; if(d<=-5) f++; else if(d>=5) ri++; }
+  if(n>24*14) try{ localStorage.setItem(LSWB,JSON.stringify({fall:f/n,rise:ri/n})); }catch(e){}
+  return wxCache; }
+function wxAt(S,iso){ const ts=new Date(iso)/1000; let i=-1; for(let j=0;j<S.t.length;j++){ if(S.t[j]<=ts) i=j; else break; } if(i<24||ts-S.t[i]>7200) return null;
+  const p=S.p[i], p0=S.p[i-24]; if(p==null||p0==null) return null; return {at:iso,p:Math.round(p*10)/10,dp:Math.round((p-p0)*10)/10,t:Math.round(S.tp[i]),h:Math.round(S.hu[i])}; }
+function wxText(w){ const d=toMM(w.p)-toMM(w.p-w.dp); return `Давление ${toMM(w.p)} мм рт. ст. (${d>0?"+":d<0?"−":"±"}${Math.abs(d)} за сутки) · ${w.t>0?"+":""}${w.t}° · влажность ${w.h}%`; }
+const wxFall=w=>w&&w.dp<=-5, wxRise=w=>w&&w.dp>=5;
+async function backfillWeather(){
+  if(!geo||wxBusy||navigator.onLine===false) return; const lim=Date.now()-90*864e5;
+  const need=attacks.filter(a=>(!a.wx||a.wx.at!==a.start)&&new Date(a.start)>lim&&new Date(a.start)<Date.now()); if(!need.length) return;
+  wxBusy=true; try{ const S=await wxSeries(await refreshGeo()); let ch=0;
+    for(const a0 of need){ const a=attacks.find(x=>x.id===a0.id); if(!a) continue; const w=wxAt(S,a.start); if(!w) continue; const upd={...a,wx:w}; attacks[attacks.indexOf(a)]=upd; ch++; if(store){ try{ await store.doc(upd.id).set({...upd,kind:"attack"}); }catch(e){} } }
+    if(ch){ saveLocal(); if(!sheetKind) render(); }
+  }catch(e){} wxBusy=false; }
+async function enableWeather(){ toast("Разрешите доступ к геопозиции"); const g=await getGeo(); if(!g){ toast("Нет доступа к геопозиции"); return; } toast("Погода включена"); render(); await backfillWeather(); render(); }
+function wxCard(){
+  if(!geo) return `<div class="card"><div class="t">Погода и давление</div><div class="muted" style="font-size:14px">Приложение будет само записывать давление и погоду при каждом приступе, а здесь покажет, связаны ли они с мигренью. Геопозиция нужна один раз, чтобы узнать ваш город.</div><button class="btn dark" data-act="wx-on" style="align-self:flex-start">Включить</button></div>`;
+  const list=summary(90).list.filter(a=>a.wx); const n=list.length;
+  if(!n) return `<div class="card"><div class="t">Погода и давление</div><div class="muted" style="font-size:14px">Погода запишется при следующем приступе. Нужен интернет, но можно и позже: данные подтянутся, когда связь появится.</div></div>`;
+  let base=null; try{ base=JSON.parse(localStorage.getItem(LSWB)||"null"); }catch(e){}
+  const row=(lab,c,b)=>`<div style="display:flex;flex-direction:column;gap:6px"><div class="spread" style="font-size:13px"><span>${lab}</span><span class="muted num">${c} из ${n}</span></div><div class="bar2"><i style="width:${c/n*100}%"></i>${b!=null?`<u style="left:${Math.min(99,b*100)}%" title="обычно"></u>`:""}</div></div>`;
+  const f=list.filter(a=>wxFall(a.wx)).length, r=list.filter(a=>wxRise(a.wx)).length;
+  const avg=toMM(list.reduce((s,a)=>s+a.wx.p,0)/n);
+  return `<div class="card"><div class="t">Погода и давление</div>
+    <div class="muted" style="font-size:12.5px">Изменение давления за сутки до начала приступа, за 90 дней${base?". Чёрная метка — как часто так бывает в обычные дни":""}.</div>
+    ${row("Давление падало",f,base&&base.fall)}${row("Давление росло",r,base&&base.rise)}${row("Стабильно",n-f-r,base&&1-base.fall-base.rise)}
+    <div class="muted" style="font-size:12.5px">Среднее давление при приступах: ${avg} мм рт. ст.${base&&f/n>base.fall*1.5&&n>=5?` <b style="color:var(--ink);font-weight:500">Падение давления совпадает с мигренью заметно чаще обычного.</b>`:""}</div></div>`;
+}
+
+/* ---------- day log ---------- */
+const DAY_F=[{k:"sleep",l:"Сон",o:["Мало","Норма","Много"]},{k:"stress",l:"Стресс",o:["Низкий","Средний","Высокий"]},{k:"water",l:"Вода",o:["Мало","Норма"]},{k:"coffee",l:"Кофе",o:["0","1","2","3+"]},{k:"period",l:"Цикл",o:["Месячные"]}];
+const dayFilled=k=>!!days[k]&&DAY_F.some(f=>days[k][f.k]);
+const nextKey=k=>{ const d=new Date(k+"T12:00"); d.setDate(d.getDate()+1); return dayKey(d); };
+const prevKey=k=>{ const d=new Date(k+"T12:00"); d.setDate(d.getDate()-1); return dayKey(d); };
+let dayEdit=null;
+function dayChips(k){ const d=days[k]||{}; return DAY_F.map(f=>`<div class="dayrow"><span class="dl">${f.l}</span><div class="chips">${f.o.map(o=>`<button type="button" class="chip sm" data-dayset="${k}" data-f="${f.k}" data-v="${esc(o)}" aria-pressed="${d[f.k]===o}">${esc(o)}</button>`).join("")}</div></div>`).join(""); }
+let dayOpen=false;
+const DAY_MAIN=["sleep","stress","water","coffee"];
+const dayDoneN=k=>DAY_MAIN.filter(f=>(days[k]||{})[f]).length;
+function dayParts(k){ const d=days[k]||{}; return DAY_F.filter(f=>d[f.k]).map(f=>f.k==="period"?"месячные":f.k==="coffee"?"кофе: "+d[f.k]:f.l+": "+d[f.k].toLowerCase()); }
+function dayCard(){ const t=dayKey(new Date()), y=prevKey(t); const n=dayDoneN(t);
+  const yLink=!dayFilled(y)?`<button type="button" class="linkbtn" style="align-self:flex-start;font-size:13px" data-dayopen="${y}">Отметить вчера</button>`:"";
+  if(n===DAY_MAIN.length&&!dayOpen) return `<div class="card daydone" style="gap:10px"><div class="spread" style="align-items:flex-start"><div style="display:flex;gap:12px;align-items:flex-start;min-width:0"><span class="dcheck"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 10.5 3.2 3.2L15 7"/></svg></span><div style="min-width:0"><div class="t">День отмечен</div><div class="muted" style="font-size:13px;line-height:1.35">${esc(dayParts(t).join(" · "))}</div></div></div><button type="button" class="btn sm glass" data-act="day-edit">Изменить</button></div>${yLink}</div>`;
+  return `<div class="card" style="gap:10px"><div class="spread"><div class="t">Как прошёл день?</div><span class="muted num" style="font-size:12px">${n?`${n} из ${DAY_MAIN.length}`:""}</span></div>${dayChips(t)}${n===DAY_MAIN.length?`<button type="button" class="btn sm dark" style="align-self:flex-start" data-act="day-done">Готово</button>`:""}${yLink}</div>`; }
+function openDay(k){ dayEdit=k; const d=new Date(k+"T12:00");
+  openSheet("dayedit",`<div class="sheet" role="dialog" aria-label="Отметка дня"><div class="grab"></div><div class="spread"><h2>${fmtDate(d)}</h2>${closeBtn}</div><div class="card" style="gap:10px"><div class="t">Отметка дня</div>${dayChips(k)}</div>
+   <div class="sheet-actions"><button type="button" class="save-btn" data-act="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Готово</button></div></div>`); }
+async function setDay(k,f,v){ const d={...(days[k]||{})}; if(d[f]===v) delete d[f]; else d[f]=v; if(DAY_F.some(x=>d[x.k])) days[k]=d; else delete days[k]; saveLocal();
+  if(store){ try{ if(days[k]) await store.doc("day-"+k).set({kind:"day",key:k,...days[k]}); else await store.doc("day-"+k).delete(); }catch(e){} } }
+function dayStats(){ const today=dayKey(new Date()); const keys=Object.keys(days).filter(k=>k<today&&dayFilled(k)).sort(); const n=keys.length;
+  const starts=new Set(attacks.map(a=>dayKey(new Date(a.start)))); const mig=k=>starts.has(k)||starts.has(nextKey(k));
+  const base=n?keys.filter(mig).length/n:0; const rows=[];
+  DAY_F.forEach(f=>f.o.forEach(o=>{ const ks=keys.filter(k=>days[k][f.k]===o); if(ks.length<3) return; const m=ks.filter(mig).length; rows.push({lab:f.l+": "+o.toLowerCase(),n:ks.length,m,r:m/ks.length}); }));
+  rows.sort((a,b)=>b.r-a.r||b.n-a.n); return {n,base,rows}; }
+function dayAnalysisCard(){ const st=dayStats(); const need=14;
+  if(st.n<need) return `<div class="card"><div class="t">Что бывает перед мигренью</div><div class="muted" style="font-size:14px">Отмечайте «Как прошёл день?» на главном экране. После ${need} дней здесь появится сравнение: что чаще бывает в день мигрени или накануне.</div><div class="bar2"><i style="width:${st.n/need*100}%"></i></div><div class="muted num" style="font-size:12.5px">${st.n} из ${need} дней отмечено</div></div>`;
+  const top=st.rows.filter(r=>r.r>st.base).slice(0,5);
+  return `<div class="card"><div class="t">Что бывает перед мигренью</div><div class="muted" style="font-size:12.5px">Как часто мигрень начиналась в тот же или на следующий день. В среднем — после ${Math.round(st.base*100)}% дней (чёрная метка). ${st.n} дней отмечено.</div>
+   ${top.length?top.map(r=>`<div style="display:flex;flex-direction:column;gap:6px"><div class="spread" style="font-size:13px"><span>${esc(r.lab)}</span><span class="muted num">${Math.round(r.r*100)}% · ${r.m} из ${r.n}</span></div><div class="bar2"><i style="width:${r.r*100}%"></i><u style="left:${Math.min(99,st.base*100)}%"></u></div></div>`).join(""):`<div class="muted" style="font-size:14px">Пока ничего не выделяется заметно сильнее обычного.</div>`}</div>`; }
+
+/* ---------- PDF report ---------- */
+function pdfFromJpegs(pages){
+  const enc=new TextEncoder(); const parts=[]; const offs=[]; let len=0;
+  const push=x=>{ const b=typeof x==="string"?enc.encode(x):x; parts.push(b); len+=b.length; };
+  const obj=(n,body)=>{ offs[n]=len; push(`${n} 0 obj\n`); body.forEach(push); push("\nendobj\n"); };
+  push("%PDF-1.4\n"); push(new Uint8Array([37,226,227,207,211,10]));
+  const N=pages.length, PW=595.28, PH=841.89;
+  obj(1,["<< /Type /Catalog /Pages 2 0 R >>"]);
+  obj(2,[`<< /Type /Pages /Kids [${pages.map((_,i)=>`${3+3*i} 0 R`).join(" ")}] /Count ${N} >>`]);
+  pages.forEach((pg,i)=>{ const pn=3+3*i; const cs=`q ${PW} 0 0 ${PH} 0 0 cm /Im${i} Do Q`;
+    obj(pn,[`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im${i} ${pn+2} 0 R >> >> /Contents ${pn+1} 0 R >>`]);
+    obj(pn+1,[`<< /Length ${cs.length} >>\nstream\n`,cs,"\nendstream"]);
+    obj(pn+2,[`<< /Type /XObject /Subtype /Image /Width ${pg.w} /Height ${pg.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${pg.data.length} >>\nstream\n`,pg.data,"\nendstream"]); });
+  const xref=len, n=3+3*N; let x=`xref\n0 ${n}\n0000000000 65535 f \n`; for(let k=1;k<n;k++) x+=String(offs[k]).padStart(10,"0")+" 00000 n \n";
+  push(x); push(`trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts,{type:"application/pdf"});
+}
+function buildReportPdf(daysN){
+  const W=1240,H=1754,M=84, INK="#141414", MUT="#6e6c68", LINE="#e2e0db", SOFT="#f3f2ee";
+  const LV=["#e9e7e2","#d4ec8c","#eadb6a","#f2a75c","#ee7b5c","#dd4f6e"];
+  const FAM='Geologica, -apple-system, "Helvetica Neue", Arial, sans-serif';
+  const F=(w,s)=>`${w} ${s}px ${FAM}`;
+  const pages=[]; let c=null, y=0, pno=0;
+  const finish=()=>{ c.font=F(400,17); c.fillStyle=MUT; c.textAlign="left"; c.fillText(tr("Дневник мигрени"),M,H-48); c.textAlign="right"; c.fillText(tr("стр.")+" "+pno,W-M,H-48);
+    const u=c.canvas.toDataURL("image/jpeg",0.9); const b=atob(u.split(",")[1]); const a=new Uint8Array(b.length); for(let i=0;i<b.length;i++) a[i]=b.charCodeAt(i); pages.push({data:a,w:W,h:H}); };
+  const newPage=()=>{ if(c) finish(); const cv=document.createElement("canvas"); cv.width=W; cv.height=H; c=cv.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,W,H); y=M; pno++; };
+  const need=h=>{ if(y+h>H-M-40) newPage(); };
+  const txt=(s,x,yy,font,col=INK,al="left")=>{ c.font=font; c.fillStyle=col; c.textAlign=al; c.fillText(tr(String(s)),x,yy); };
+  const lines=(s,maxW,font)=>{ c.font=font; const out=[]; String(tr(s)).split("\n").forEach(par=>{ let line=""; par.split(" ").forEach(w=>{ const t=line?line+" "+w:w; if(c.measureText(t).width>maxW&&line){ out.push(line); line=w; } else line=t; }); out.push(line); }); return out; };
+  const para=(s,x,maxW,font,lh,col=INK)=>{ lines(s,maxW,font).forEach(l=>{ need(lh); c.font=font; c.fillStyle=col; c.textAlign="left"; c.fillText(l,x,y); y+=lh; }); };
+  const rr=(x,yy,w,h,r,fill,stroke)=>{ c.beginPath(); c.roundRect?c.roundRect(x,yy,w,h,r):c.rect(x,yy,w,h); if(fill){ c.fillStyle=fill; c.fill(); } if(stroke){ c.strokeStyle=stroke; c.lineWidth=2; c.stroke(); } };
+  const section=t=>{ need(90); y+=26; txt(t.toUpperCase(),M,y,F(600,19),MUT); y+=14; c.fillStyle=LINE; c.fillRect(M,y,W-2*M,2); y+=34; };
+  const lvl=i=>hasI(i)?Math.min(5,Math.ceil(i/2)):0;
+  const s=summary(daysN); const {from,to}=windowOf(daysN); const list=[...s.list].sort((a,b)=>a.start.localeCompare(b.start)); const n=list.length;
+  const fd=d=>`${fmtDate(d)} ${d.getFullYear()}`;
+
+  newPage();
+  txt("Дневник головной боли",M,y+44,F(700,50)); y+=86;
+  txt(`Период: ${fd(from)} — ${fd(to)} (${daysN} дней) · составлен ${fd(new Date())}`,M,y,F(400,22),MUT); y+=44;
+  txt("ФИО: ______________________________________",M,y,F(400,22),MUT); y+=46;
+
+  /* tiles */
+  const tiles=[["Приступов",n],["Дней с головной болью",s.headDays],["Дней с обезболивающими",s.medDays],["Средняя сила",s.avgI?s.avgI.toFixed(1)+"/10":"—"],["Средняя длительность",s.avgD!=null?fmtDur(s.avgD):"—"]];
+  const tg=14, tw=(W-2*M-tg*4)/5, th=128;
+  tiles.forEach(([l,v],i)=>{ const x=M+i*(tw+tg); const warn=i===2&&s.medDays>=10*daysN/30; rr(x,y,tw,th,22,warn?"#fbe3df":SOFT); txt(v,x+20,y+62,F(400,String(v).length>6?32:44),warn?"#b23a2e":INK); lines(l,tw-40,F(400,17)).forEach((ln,j)=>txt(ln,x+20,y+92+j*21,F(400,17),MUT)); });
+  y+=th+10;
+
+  /* calendar */
+  section("Календарь");
+  const months=[]; { const d=new Date(from.getFullYear(),from.getMonth(),1); while(d<=to){ months.push([d.getFullYear(),d.getMonth()]); d.setMonth(d.getMonth()+1); } }
+  const cols=3, mg=36, mw=(W-2*M-mg*(cols-1))/cols, cell=mw/7, mh=44+30+cell*6+10;
+  for(let r=0;r<Math.ceil(months.length/cols);r++){ need(mh); for(let cI=0;cI<cols;cI++){ const mm=months[r*cols+cI]; if(!mm) continue; const [yy,m]=mm; const x0=M+cI*(mw+mg); const ms=monthStats(yy,m);
+      txt(`${MONTHS[m]} ${yy}`,x0,y+28,F(600,23));
+      ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].forEach((d,i)=>txt(d,x0+cell*i+cell/2,y+64,F(500,15),MUT,"center"));
+      const first=(new Date(yy,m,1).getDay()+6)%7, nd=new Date(yy,m+1,0).getDate();
+      for(let d=1;d<=nd;d++){ const idx=first+d-1, cx=x0+cell*(idx%7)+cell/2, cy=y+74+cell*Math.floor(idx/7)+cell/2; const k=`${yy}-${pad(m+1)}-${pad(d)}`; const dt=new Date(yy,m,d,12); const inW=dt>=from&&dt<=to;
+        const had=k in ms.dayMax, mc=ms.medCount[k]||0, rad=cell/2-4;
+        c.beginPath(); c.arc(cx,cy,rad,0,Math.PI*2);
+        if(had&&inW){ const L=lvl(ms.dayMax[k]); if(L){ c.fillStyle=LV[L]; c.fill(); } else { c.fillStyle="#fff"; c.fill(); c.strokeStyle=INK; c.lineWidth=2; c.stroke(); } }
+        else { c.fillStyle=inW?SOFT:"#fafaf8"; c.fill(); }
+        txt(d,cx,cy+6,F(had&&inW?600:400,16),inW?(had&&lvl(ms.dayMax[k])===5?"#fff":INK):"#c9c6c0","center");
+        if(mc&&inW){ c.beginPath(); c.arc(cx+rad*0.72,cy-rad*0.72,7,0,Math.PI*2); c.fillStyle=INK; c.fill(); if(mc>1) txt(mc,cx+rad*0.72,cy-rad*0.72+4.5,F(700,11),"#fff","center"); }
+      } } y+=mh; }
+  need(40); let lx=M; [["1–2",1],["3–4",2],["5–6",3],["7–8",4],["9–10",5]].forEach(([l,L])=>{ c.beginPath(); c.arc(lx+10,y-6,10,0,Math.PI*2); c.fillStyle=LV[L]; c.fill(); txt(l,lx+28,y,F(400,17),MUT); lx+=100; });
+  c.beginPath(); c.arc(lx+10,y-6,10,0,Math.PI*2); c.strokeStyle=INK; c.lineWidth=2; c.stroke(); txt("сила не указана",lx+28,y,F(400,17),MUT); lx+=190;
+  c.beginPath(); c.arc(lx+8,y-6,7,0,Math.PI*2); c.fillStyle=INK; c.fill(); txt("обезболивающее (число — приёмов)",lx+24,y,F(400,17),MUT); y+=20;
+
+  /* medication */
+  const meds=Object.entries(s.meds).sort((a,b)=>b[1].n-a[1].n);
+  section("Лекарства");
+  if(!meds.length) para("Приёмов лекарств не отмечено.",M,W-2*M,F(400,20),30,MUT);
+  else { need(36); const cx=[M,M+470,M+600,M+740,M+880]; ["Препарат","Приёмов","Помогло","Частично","Не помогло"].forEach((h,i)=>txt(h,cx[i],y,F(600,17),MUT)); y+=14;
+    meds.forEach(([nm,v])=>{ need(40); c.fillStyle=LINE; c.fillRect(M,y,W-2*M,1); y+=30; txt(nm,cx[0],y,F(500,20)); [v.n,v.ok,v.part,v.no].forEach((val,i)=>txt(val,cx[i+1],y,F(400,20))); y+=10; }); y+=34;
+    const s30=summary(30); para(`Дней с обезболивающими за последние 30 дней: ${s30.medDays}.${s30.medDays>=10?" Это 10 и более дней в месяц — риск лекарственно-индуцированной головной боли.":""}`,M,W-2*M,F(400,19),28,s30.medDays>=10?"#b23a2e":MUT); }
+
+  /* patterns */
+  const cnt=(arr)=>{ const o={}; arr.forEach(v=>o[v]=(o[v]||0)+1); return Object.entries(o).sort((a,b)=>b[1]-a[1]); };
+  const bars=(title,rows,total)=>{ if(!rows.length) return; need(60); txt(title,M,y,F(600,21)); y+=16; rows.forEach(([k,v])=>{ need(34); y+=24; txt(k,M,y,F(400,19)); const bx=M+420, bw=W-2*M-420-120; rr(bx,y-13,bw,12,6,SOFT); rr(bx,y-13,Math.max(12,bw*v/Math.max(1,total)),12,6,"#ee8a6a"); txt(`${v} из ${total}`,W-M,y,F(400,18),MUT,"right"); }); y+=46; };
+  section("Закономерности");
+  y+=6; bars("Триггеры",cnt(list.flatMap(a=>a.triggers||[])).slice(0,8),n);
+  bars("Симптомы",cnt(list.flatMap(a=>a.symptoms||[])).slice(0,8),n);
+  bars("Локализация",Object.entries(s.zc).sort((a,b)=>b[1]-a[1]).slice(0,6),n);
+  y+=8; { const au=list.filter(a=>a.aura); if(au.length){ const ty=cnt(au.flatMap(a=>a.auraTypes||[])); need(40); para(`Аура: ${au.length} из ${n} приступов${ty.length?" ("+ty.map(([k,v])=>k.toLowerCase()+" "+v).join(", ")+")":""}.`,M,W-2*M,F(400,20),30); } }
+  { const wl=list.filter(a=>a.wx); if(wl.length){ const f=wl.filter(a=>wxFall(a.wx)).length, r=wl.filter(a=>wxRise(a.wx)).length; need(40); para(`Атмосферное давление за сутки до приступа: падало (≥ 4 мм рт. ст.) — ${f}, росло — ${r}, стабильно — ${wl.length-f-r} из ${wl.length}. Среднее при приступах: ${toMM(wl.reduce((a,x)=>a+x.wx.p,0)/wl.length)} мм рт. ст.`,M,W-2*M,F(400,20),30); } }
+  { const st=dayStats(); if(st.n>=14){ const top=st.rows.filter(r=>r.r>st.base).slice(0,5); if(top.length){ need(40); para(`Дневник самочувствия (${st.n} дн.): мигрень в тот же или следующий день в среднем после ${Math.round(st.base*100)}% дней; чаще — ${top.map(r=>`${r.lab.toLowerCase()} ${Math.round(r.r*100)}%`).join(", ")}.`,M,W-2*M,F(400,20),30); } } }
+
+  /* entries */
+  section(`Приступы (${n})`);
+  if(!n) para("За этот период приступов нет.",M,W-2*M,F(400,20),30,MUT);
+  list.forEach(a=>{ const d=new Date(a.start); const L=lvl(a.intensity);
+    const det=[zonesText(a),a.aura?auraText(a):"",(a.symptoms||[]).join(", "),(a.triggers||[]).length?"триггеры: "+a.triggers.join(", "):"",
+      (a.meds||[]).length?"лекарства: "+a.meds.map(m=>`${medLabel(m)} в ${fmtTime(new Date(m.time||a.start))}${m.effect?" ("+m.effect.toLowerCase()+")":""}`).join(", "):"",
+      a.wx?`давление ${toMM(a.wx.p)} мм (${a.wx.dp>0?"+":""}${toMM(a.wx.p)-toMM(a.wx.p-a.wx.dp)} за сутки)`:"",a.note||""].filter(Boolean).join(" · ");
+    const dl=lines(det||"—",W-2*M-300,F(400,18)); const h=Math.max(70,24+dl.length*26+14);
+    need(h); c.fillStyle=LINE; c.fillRect(M,y,W-2*M,1);
+    c.beginPath(); c.arc(M+26,y+38,24,0,Math.PI*2); c.fillStyle=LV[L]; c.fill(); txt(hasI(a.intensity)?a.intensity:"?",M+26,y+45,F(600,20),L===5?"#fff":INK,"center");
+    txt(`${fmtDate(d)}, ${fmtTime(d)}`,M+66,y+34,F(600,19)); txt(a.end?fmtDur(dur(a)):"идёт",M+66,y+60,F(400,17),MUT);
+    dl.forEach((l,i)=>{ c.font=F(400,18); c.fillStyle=det?INK:MUT; c.textAlign="left"; c.fillText(l,M+300,y+34+i*26); }); y+=h; }); need(2); c.fillStyle=LINE; c.fillRect(M,y,W-2*M,1);
+  finish();
+  return pdfFromJpegs(pages);
+}
+
+/* ---------- swipe down to close a sheet ---------- */
+let sd=null;
+document.addEventListener("touchstart",e=>{ const sh=e.target.closest&&e.target.closest("#sheet .sheet"); if(!sh||e.touches.length!==1) return;
+  if(e.target.closest(".head-slot,.head-wrap,.swipe,input,textarea,select,.scale,.qscale")&&!e.target.closest(".grab")) return;
+  if(sh.scrollTop>2&&!e.target.closest(".grab")) return;
+  sd={sh,bg:sh.parentElement,y:e.touches[0].clientY,x:e.touches[0].clientX,t:Date.now(),dy:0,on:false}; },{passive:true});
+document.addEventListener("touchmove",e=>{ if(!sd) return; const dy=e.touches[0].clientY-sd.y, dx=e.touches[0].clientX-sd.x;
+  if(!sd.on){ if(Math.abs(dy)<8&&Math.abs(dx)<8) return; if(dy<0||Math.abs(dx)>Math.abs(dy)||sd.sh.scrollTop>2){ sd=null; return; } sd.on=true; sd.t=Date.now(); sd.y0=dy; sd.sh.style.transition="none"; sd.sh.style.animation="none"; }
+  sd.dy=Math.max(0,dy-sd.y0); sd.sh.style.transform=`translateY(${sd.dy}px)`; if(sd.bg) sd.bg.style.opacity=String(Math.max(.35,1-sd.dy/600)); if(e.cancelable) e.preventDefault(); },{passive:false});
+function sdEnd(){ if(!sd) return; const s=sd; sd=null; if(!s.on) return; const v=s.dy/Math.max(1,Date.now()-s.t);
+  if(s.dy>110||(v>.5&&s.dy>40)){ s.sh.style.transition="transform .18s ease-in"; s.sh.style.transform="translateY(105%)"; setTimeout(()=>{ if(!s.sh.isConnected) return; if(sheetKind==="form") readForm(); closeSheet(); },170); }
+  else { s.sh.style.transition="transform .22s cubic-bezier(.2,.8,.2,1)"; s.sh.style.transform=""; if(s.bg){ s.bg.style.transition="opacity .22s"; s.bg.style.opacity=""; } } }
+document.addEventListener("touchend",sdEnd); document.addEventListener("touchcancel",sdEnd);
+
+/* ---------- quick start by link (?start / ?end) ---------- */
+function handleUrlAction(){ let q; try{ q=new URLSearchParams(location.search); }catch(e){ return; } const a=q.has("start")?"start":q.has("end")?"end":null; if(!a) return;
+  try{ history.replaceState(null,"",location.pathname+location.hash); }catch(e){}
+  setTimeout(async()=>{ if(a==="start"){ if(ongoing()) toast("Мигрень уже идёт"); else await quickStart(); } else { const on=ongoing(); if(on) await quickEnd(on.id); else toast("Идущей мигрени нет"); } },500); }
+
 /* ---------- actions ---------- */
 async function quickStart(){
   if(ongoing()) return;
-  const a=blank(new Date(),null,null); await persist(a,true);
+  const a=blank(new Date(),null,null); await persist(a,true); setTimeout(backfillWeather,300);
   toast("Мигрень началась в "+fmtTime(new Date()),"Изменить время",()=>openTime(a));
 }
 async function quickEnd(id){
@@ -882,24 +1107,32 @@ document.addEventListener("click",async ev=>{
   if(act==="pills"){ openPills(false); return; }
   if(act==="close"||act==="close-bg"){ if(sheetKind==="form") readForm(); closeSheet(); return; }
   if(t.dataset.day){ const k=t.dataset.day; const list=sorted().filter(a=>daysOf(a).includes(k)||(a.meds||[]).some(m=>dayKey(new Date(m.time||a.start))===k));
+    if(!list.length){ openDay(k); return; }
     if(list.length===1){ openForm(list[0]); return; }
-    if(list.length>1){ const d=new Date(k+"T12:00"); openSheet("day",`<div class="sheet" role="dialog" aria-label="Записи за день"><div class="grab"></div><div class="spread"><h2>${fmtDate(d)}</h2>${closeBtn}</div><div class="muted" style="font-size:14px">${list.length} ${plural(list.length,"запись","записи","записей")} в этот день</div><div class="list">${list.map(itemHtml).join("")}</div></div>`); }
+    if(list.length>1){ const d=new Date(k+"T12:00"); openSheet("day",`<div class="sheet" role="dialog" aria-label="Записи за день"><div class="grab"></div><div class="spread"><h2>${fmtDate(d)}</h2>${closeBtn}</div><div class="muted" style="font-size:14px">${list.length} ${plural(list.length,"запись","записи","записей")} в этот день</div><div class="list">${list.map(itemHtml).join("")}</div><button type="button" class="btn" style="align-self:flex-start" data-act="dayopen-k" data-k="${k}">Отметка дня</button></div>`); }
     return; }
   if(act==="cal"){ calMonth.setMonth(calMonth.getMonth()+ +t.dataset.d); render(); return; }
   if(act==="report"){ openReport(); return; }
   if(t.dataset.rdays){ reportDays=+t.dataset.rdays; openReport(); return; }
   if(act==="copy"){ const txt=tr(reportText(reportDays)); try{ await navigator.clipboard.writeText(txt); toast("Скопировано"); }catch(e){ const r=document.createRange(); r.selectNodeContents($("#report-text")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Текст выделен, скопируйте его вручную"); } return; }
+  if(act==="pdf"){ let blob; try{ blob=buildReportPdf(reportDays); }catch(e){ toast("Не удалось создать PDF"); return; } await saveFile(`migraine-report-${dayKey(new Date())}.pdf`,blob,"application/pdf"); return; }
   if(act==="csv"){ await saveFile(`migraine-${dayKey(new Date())}.csv`,csv(),"text/csv;charset=utf-8"); return; }
   if(act==="backup"){ await doBackup(); return; }
   if(act==="bk-now"){ if(await doBackup()) closeSheet(); return; }
   if(act==="bk-later"){ lsSet(BK_SNOOZE,String(Date.now()+3*864e5)); closeSheet(); return; }
+  if(act==="day-edit"){ dayOpen=true; render(); return; }
+  if(act==="day-done"){ dayOpen=false; render(); return; }
+  if(t.dataset.dayset){ await setDay(t.dataset.dayset,t.dataset.f,t.dataset.v); if(sheetKind==="dayedit") openDay(dayEdit); else render(); return; }
+  if(t.dataset.dayopen){ openDay(t.dataset.dayopen); return; }
+  if(act==="dayopen-k"){ openDay(t.dataset.k); return; }
+  if(act==="wx-on"){ await enableWeather(); return; }
   if(act==="restore"){ document.getElementById("restore-file").click(); return; }
   /* time sheet */
   if(sheetKind==="time"){
     if(t.dataset.shift){ readTime(); const k=t.dataset.shift; const d=new Date(timeEdit[k]); d.setMinutes(d.getMinutes()+ +t.dataset.m); if(k==="end"&&d>new Date()){ toast("Нельзя позже текущего времени"); return; } timeEdit[k]=d.toISOString(); renderTime(); return; }
     if(act==="t-endnow"){ readTime(); timeEdit.end=new Date().toISOString(); renderTime(); return; }
     if(act==="t-reopen"){ readTime(); timeEdit.end=null; renderTime(); return; }
-    if(act==="t-save"){ readTime(); if(timeEdit.end&&new Date(timeEdit.end)<new Date(timeEdit.start)){ toast("Конец раньше начала. Проверьте время."); return; } if(!timeEdit.end&&ongoing()&&ongoing().id!==timeEdit.id){ toast("Уже есть идущая мигрень"); return; } const a=attacks.find(x=>x.id===timeEdit.id); const upd={...a,start:timeEdit.start,end:timeEdit.end}; $("#sheet").innerHTML=""; sheetKind=null; timeEdit=null; await persist(upd); toast("Время сохранено"); return; }
+    if(act==="t-save"){ readTime(); if(timeEdit.end&&new Date(timeEdit.end)<new Date(timeEdit.start)){ toast("Конец раньше начала. Проверьте время."); return; } if(!timeEdit.end&&ongoing()&&ongoing().id!==timeEdit.id){ toast("Уже есть идущая мигрень"); return; } const a=attacks.find(x=>x.id===timeEdit.id); const upd={...a,start:timeEdit.start,end:timeEdit.end}; $("#sheet").innerHTML=""; sheetKind=null; timeEdit=null; await persist(upd); toast("Время сохранено"); setTimeout(backfillWeather,300); return; }
     return;
   }
   /* symptoms / triggers sheet */
@@ -929,6 +1162,7 @@ document.addEventListener("click",async ev=>{
   if(t.dataset.int){ readForm(); editing.intensity=+t.dataset.int; renderForm(); return; }
   if(t.dataset.chip){ readForm(); const k=t.dataset.chip, v=t.dataset.v; if(t.dataset.multi==="true"){ const arr=editing[k]; const i=arr.indexOf(v); i>=0?arr.splice(i,1):arr.push(v); } else editing[k]=editing[k]===v?"":v; renderForm(); return; }
   if(t.dataset.aura){ readForm(); editing.aura=!editing.aura; renderForm(); return; }
+  if(t.dataset.auratype){ readForm(); const L=editing.auraTypes=[...(editing.auraTypes||[])]; const i=L.indexOf(t.dataset.auratype); i>=0?L.splice(i,1):L.push(t.dataset.auratype); L.sort((a,b)=>AURA_TYPES.indexOf(a)-AURA_TYPES.indexOf(b)); editing.aura=L.length>0; renderForm(); return; }
   if(t.dataset.zone){ toggleZone(t.dataset.zone); return; }
   if(t.dataset.hview){ Head3D.view(t.dataset.hview); return; }
   if(t.dataset.addpill){ readForm(); const p=getPills().find(x=>x.id===t.dataset.addpill); if(p){ let last=-1; editing.meds.forEach((m,i)=>{ if(isPill(m,p)) last=i; }); if(last>=0){ const [gone]=editing.meds.splice(last,1); toast(medLabel(gone)+" убран"); } else { const time=editing.end?editing.start:new Date().toISOString(); editing.meds.push({pillId:p.id,name:p.name,dose:p.dose,time,effect:""}); } } renderForm(); return; }
@@ -944,7 +1178,8 @@ document.addEventListener("submit",async ev=>{
   const a=editing; a.side="";
   if(a.end && new Date(a.end)<new Date(a.start)){ toast("Конец раньше начала. Проверьте время."); return; }
   if(!a.end && ongoing() && ongoing().id!==a.id){ toast("Уже есть идущая мигрень. Укажите, когда закончилась эта."); return; }
-  $("#sheet").innerHTML=""; sheetKind=null; editing=null; await persist(a); toast("Сохранено");
+  { const cur=attacks.find(x=>x.id===a.id); if(cur&&cur.wx&&!a.wx) a.wx=cur.wx; }
+  $("#sheet").innerHTML=""; sheetKind=null; editing=null; await persist(a); toast("Сохранено"); setTimeout(backfillWeather,300);
 });
 document.addEventListener("change",async ev=>{
   if(ev.target.id!=="restore-file"||!ev.target.files[0]) return;
@@ -952,6 +1187,7 @@ document.addEventListener("change",async ev=>{
     const ids=new Set(attacks.map(a=>a.id)); let n=0; d.attacks.forEach(a=>{ if(a&&a.id&&a.start&&!ids.has(a.id)){ attacks.push(a); n++; } });
     if(Array.isArray(d.pills)&&d.pills.length) pills=d.pills;
     if(d.lists&&typeof d.lists==="object") lists=d.lists;
+    if(d.days&&typeof d.days==="object") Object.entries(d.days).forEach(([k,v])=>{ if(!days[k]) days[k]=v; });
     saveLocal(); closeSheet(); toast(n?`Восстановлено записей: ${n}`:"Новых записей в файле нет");
   }catch(e){ toast("Не удалось прочитать файл. Нужен файл копии из этого приложения."); }
   ev.target.value="";
@@ -986,11 +1222,12 @@ function endDrag(ev){
 document.addEventListener("pointerup",endDrag); document.addEventListener("pointercancel",endDrag);
 document.addEventListener("keydown",ev=>{ const el=ev.target.closest&&ev.target.closest(".swipe"); if(el&&(ev.key==="Enter"||ev.key===" ")){ ev.preventDefault(); swipeDone(el); } });
 
-loadLocal(); render(); initStore();
+loadLocal(); render(); initStore(); handleUrlAction(); setTimeout(backfillWeather,1500);
+window.addEventListener("online",()=>setTimeout(backfillWeather,1000));
 try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
 function checkBackup(){ if(!sheetKind&&backupDue()) openBackupReminder(); }
 setTimeout(checkBackup,900);
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") setTimeout(checkBackup,600); });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ setTimeout(checkBackup,600); setTimeout(backfillWeather,1200); } });
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 
