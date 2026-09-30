@@ -46,6 +46,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .top{display:flex;justify-content:space-between;align-items:center;padding-top:4px}
 .brand{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
 .brand svg{width:26px;height:26px}
+.lang-btn{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px;font-size:11.5px;font-weight:600;letter-spacing:.06em}
+.lang-btn span{padding:5px 8px;border-radius:999px;color:var(--ink-2)}
+.lang-btn span.on{background:#141414;color:#fff}
 .theme-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px 7px 10px;font-size:12px;font-weight:500}
 .theme-btn svg{width:15px;height:15px}
 .circ{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;justify-content:center;flex:none}
@@ -293,6 +296,89 @@ const EFFECTS=["Помогло","Частично","Не помогло"];
 const MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 const MONTHS_G=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 const DAYS=["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+
+/* ---------- i18n (display-only; stored data stays in Russian) ---------- */
+let LANG="ru"; try{ LANG=localStorage.getItem("migraine-lang")||"ru"; }catch(e){}
+const EN_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const EN_DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const EN_PL={"день":["day","days"],"запись":["entry","entries"],"приступ":["attack","attacks"]};
+const I18N={
+"ДНЕВНИК ГОЛОВНОЙ БОЛИ — последние":"HEADACHE DIARY — last","Составлен":"Created","ЗАПИСИ":"ENTRIES",
+"Дней с приёмом обезболивающих":"Days with painkillers","Дней с головной болью":"Days with headache","Средняя интенсивность":"Average intensity","Средняя длительность":"Average duration","Частые триггеры":"Common triggers","Лекарства":"Medication","лекарства":"medication","симптомы":"symptoms","триггеры":"triggers","помогло":"helped","частично":"partly","сила не указана":"intensity not set",
+"Записи хранятся только на этом телефоне. Время от времени сохраняйте копию в «Файлы» или iCloud Drive, чтобы ничего не потерять.":"Entries are stored only on this phone. Save a backup to Files or iCloud Drive now and then so nothing gets lost.",
+"Записи хранятся только на этом телефоне. Раз в две недели стоит сохранять копию в «Файлы» или iCloud Drive, чтобы ничего не потерять.":"Entries are stored only on this phone. Save a backup to Files or iCloud Drive every two weeks so nothing gets lost.",
+"Записи хранятся только на этом телефоне. Время от времени сохраняйте копию в «Файлы» или iCloud Drive, чтобы ничего не потерять":"Entries are stored only on this phone. Save a backup to Files or iCloud Drive now and then so nothing gets lost",
+"Здесь будут все приступы. Нажмите «Мигрень началась» на главном экране, когда начнётся приступ, или запишите прошедший.":"All your attacks will appear here. Slide “Migraine started” on the home screen when an attack begins, or log a past one.",
+"Эти таблетки появятся кнопками во время мигрени и в подробностях. Название и дозу можно поправить прямо в строке.":"These pills appear as buttons during a migraine and in the details. Edit the name and dose right in the row.",
+"Нажмите на отмеченную таблетку ещё раз, чтобы убрать её. Количество доз меняется кнопками «−» и «+».":"Tap a selected pill again to remove it. Change the number of doses with “−” and “+”.",
+"Отмечайте триггеры в подробностях приступа, и здесь станет видно, что чаще совпадает с мигренью.":"Mark triggers in the attack details to see what most often comes with a migraine.",
+"Отмечайте таблетки и их эффект, чтобы сравнить, что работает лучше.":"Mark pills and their effect to compare what works best.",
+"Отмечайте зоны на голове в подробностях приступа.":"Mark zones on the head in the attack details.",
+"Приём 10 и более дней в месяц может сам поддерживать головную боль. Стоит обсудить с неврологом.":"Taking them 10 or more days a month can itself sustain headaches. Worth discussing with a neurologist.",
+"Не удалось прочитать файл. Нужен файл копии из этого приложения.":"Couldn’t read the file. Use a backup file from this app.",
+"Нет связи с облаком, запись сохранена на устройстве":"No cloud connection, the entry is saved on this device","Нет связи с облаком, список сохранён на устройстве":"No cloud connection, the list is saved on this device",
+"Уже есть идущая мигрень. Укажите, когда закончилась эта.":"A migraine is already in progress. Set when this one ended.",
+"Оставьте «Закончилась» пустым, если мигрень ещё идёт.":"Leave “Ended” empty if the migraine is still going.",
+"Список пуст. Добавьте первую таблетку ниже.":"The list is empty. Add your first pill below.",
+"Хранилище заполнено. Удалите старые записи.":"Storage is full. Delete old entries.",
+"Мигрень закончилась. Сдвиньте вправо или нажмите Enter":"Migraine ended. Slide right or press Enter","Мигрень началась. Сдвиньте вправо или нажмите Enter":"Migraine started. Slide right or press Enter",
+"Сдвиньте кружок вправо, время запишется само.":"Slide the circle right, the time is logged automatically.","Сдвиньте кружок вправо до конца":"Slide the circle all the way right",
+"Нажали случайно? Нажмите «−» или на таблетку ещё раз.":"Tapped by mistake? Tap “−” or the pill again.",
+"Что происходило, что помогло, самочувствие после":"What happened, what helped, how you felt after",
+"Текст выделен, скопируйте его вручную":"Text selected, copy it manually","Копию ещё ни разу не сохраняли.":"No backup saved yet.",
+"Конец раньше начала. Проверьте время.":"End is before start. Check the time.","Нельзя позже текущего времени":"Can’t be later than now",
+"Новых записей в файле нет":"No new entries in the file","Восстановлено записей":"Entries restored",
+"Нажмите на зону · листайте, чтобы повернуть":"Tap a zone · swipe to rotate","Где болит · нажмите на зону":"Where it hurts · tap a zone","Таблетки · нажмите, что приняли":"Pills · tap what you took",
+"Приняли таблетку? Нажмите":"Took a pill? Tap it","Календарь и закономерности":"Calendar and patterns","за 30 дней, к прошлому месяцу":"in 30 days, vs last month",
+"Записать прошедший приступ":"Log a past attack","Записать прошедшую":"Log a past one","Восстановить из файла":"Restore from file","Напомнить через 3 дня":"Remind me in 3 days",
+"Мигрень закончилась":"Migraine ended","Мигрень началась в":"Migraine started at","Мигрень началась":"Migraine started","Мигрень ещё идёт":"Migraine is still going","Мигрень идёт":"Migraine in progress","Без мигрени":"No migraine",
+"Закончилась сейчас":"Ended now","Закончилась. Длилась":"Ended. Lasted","Закончилась":"Ended","Началась":"Started","началась":"started",
+"Последние 16 дней":"Last 16 days","с болью за 30":"with pain in 30","с последнего приступа":"since the last attack","Записей пока нет":"No entries yet",
+"Отчёт для врача":"Report for doctor","Для врача":"For doctor","Врачу":"Doctor","Мои таблетки":"My pills","Резервная копия":"Backup","Сохраните копию":"Save a backup","Сохранить копию":"Save backup","Копия сохранена":"Backup saved","Последняя копия —":"Last backup —","Напоминание о копии":"Backup reminder","Записей в дневнике":"Entries in diary",
+"Скопировать текст":"Copy text","Скачать таблицу":"Download table","Скопировано":"Copied","Сохранить время":"Save time","Сохранить список":"Save list","Список сохранён":"List saved","Время сохранено":"Time saved","Сохранено":"Saved","Сохранить":"Save",
+"Удалить запись?":"Delete entry?","Удалить запись":"Delete entry","Запись удалена":"Entry deleted","Удалить":"Delete","Отменить":"Undo","Отмена":"Cancel","Вернуть":"Restore","убран":"removed",
+"Изменить время":"Edit time","изменить время":"edit time","Изменить список":"Edit list","Добавить таблетку":"Add a pill","Добавить":"Add","Впишите название таблетки":"Enter the pill name","Например, Нурофен":"e.g. Nurofen","Название":"Name","Доза":"Dose","Ещё доза":"One more dose","Убрать дозу":"Remove a dose",
+"Подробности приступа":"Attack details","Прошедший приступ":"Past attack","Подробности":"Details","Подробнее":"Details","Время приступа":"Attack time","Время приёма":"Time taken","Время":"Time","Новая запись":"New entry","Записи за день":"Entries for the day","в этот день":"on this day",
+"Уже есть идущая мигрень":"A migraine is already in progress","Обратите внимание":"Please note","Обезболивающие были в":"Painkillers were taken on","из 30.":"of 30.",
+"Где болит чаще":"Where it hurts most","Что помогает":"What helps","Возможные триггеры":"Possible triggers","Симптомы":"Symptoms","Заметка":"Note","Аура":"Aura","Была аура":"Had aura","аура":"aura","Сила боли":"Pain intensity","Сила":"Intensity","едва заметно":"barely noticeable","невыносимо":"unbearable",
+"Зоны не выбраны":"No zones selected","стороны — ваши":"sides are yours","Болит:":"Hurts:","Спереди":"Front","Слева":"Left","Справа":"Right","Сзади":"Back",
+"Предыдущий месяц":"Previous month","Следующий месяц":"Next month","Дней с мигренью":"Migraine days","С таблетками":"With pills","Приступов":"Attacks","Приступы":"Attacks","Длятся":"Duration","в среднем":"on average","за 90 дней":"in 90 days","средняя сила":"average intensity","Недавние":"Recent","Все":"All",
+"Близко к порогу":"Near the limit","В норме":"Normal","Много":"Too many","нет данных":"no data","лёгкие":"mild","умеренные":"moderate","сильные":"severe","тяжёлые":"very severe",
+"очень сильная":"very strong","слабая":"mild","средняя":"moderate","сильная":"strong",
+"Доброе утро":"Good morning","Добрый день":"Good afternoon","Добрый вечер":"Good evening","Доброй ночи":"Good night",
+"Сейчас":"Now","Дневник":"Diary","Анализ":"Analysis","Таблетки":"Pills","Мигрень":"Migraine","Демо":"Demo","Закрыть":"Close",
+"Пример с вымышленными данными. Нажимайте что угодно: изменения не сохраняются.":"Sample with made-up data. Tap anything: changes aren’t saved.",
+"идёт сейчас":"in progress","идёт":"in progress","сегодня":"today","вчера":"yesterday","назад":"ago","без боли":"no pain","боль":"pain","мигрень":"migraine","таблетка":"pill","таблеток:":"pills:",
+"Дневник мигрени":"Migraine Diary","демо":"demo","не помогло":"didn’t help","Помогло":"Helped","Частично":"Partly","Не помогло":"Didn’t help","нет":"no","да":"yes",
+"Пн":"Mo","Вт":"Tu","Ср":"We","Чт":"Th","Пт":"Fr","Сб":"Sa","Вс":"Su",
+"Тошнота":"Nausea","Рвота":"Vomiting","Светобоязнь":"Light sensitivity","Звукобоязнь":"Sound sensitivity","Непереносимость запахов":"Smell sensitivity","Головокружение":"Dizziness","Пульсирующая боль":"Throbbing pain","Усиление при движении":"Worse with movement",
+"Стресс":"Stress","Недосып":"Too little sleep","Пересып":"Oversleeping","Пропуск еды":"Skipped meal","Алкоголь":"Alcohol","Кофеин":"Caffeine","Погода":"Weather","Долго у экрана":"Screen time","Менструация":"Menstruation","Духота":"Stuffy air","Яркий свет":"Bright light","Физнагрузка":"Exercise","Обезвоживание":"Dehydration",
+"Верх затылка справа":"Upper back of head, right","Верх затылка слева":"Upper back of head, left","За ухом справа":"Behind right ear","За ухом слева":"Behind left ear","Нос и подбородок":"Nose and chin",
+"Правый висок":"Right temple","Левый висок":"Left temple","Правая бровь":"Right eyebrow","Левая бровь":"Left eyebrow","Правый глаз":"Right eye","Левый глаз":"Left eye","Правая щека":"Right cheek","Левая щека":"Left cheek","Ухо справа":"Right ear","Ухо слева":"Left ear","Темя справа":"Right parietal","Темя слева":"Left parietal","Шея сзади":"Back of neck","Затылок":"Back of head","Макушка":"Crown","Лоб":"Forehead","Шея":"Neck","Плечи":"Shoulders",
+"Ибупрофен":"Ibuprofen","Суматриптан":"Sumatriptan","Парацетамол":"Paracetamol","мг":"mg",
+"Начало":"Start","Окончание":"End","Длительность, мин":"Duration, min","Локализация":"Location","Триггеры":"Triggers",
+"Январь":"January","Февраль":"February","Март":"March","Апрель":"April","Май":"May","Июнь":"June","Июль":"July","Август":"August","Сентябрь":"September","Октябрь":"October","Ноябрь":"November","Декабрь":"December",
+"воскресенье":"Sunday","понедельник":"Monday","вторник":"Tuesday","среда":"Wednesday","четверг":"Thursday","пятница":"Friday","суббота":"Saturday","из":"of","дней":"days","дня":"days","день":"day","мин":"min","ч":"h","дн":"d","в":"at","и":"and"
+};
+const I18N_RULES=(()=>{ const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); return Object.keys(I18N).sort((a,b)=>b.length-a.length).map(k=>[new RegExp("(?<![А-Яа-яЁёA-Za-z])"+esc(k)+"(?![А-Яа-яЁё])","g"),I18N[k]]); })();
+const CYR=/[А-Яа-яЁё]/;
+function tr(s){ if(LANG!=="en"||!s||!CYR.test(s)) return s;
+  s=s.replace(/(\d{1,2}) (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)/g,(m,d,mo)=>EN_MONTHS[MONTHS_G.indexOf(mo)].slice(0,3)+" "+d);
+  for(const [re,v] of I18N_RULES){ if(CYR.test(s)) s=s.replace(re,v); else break; }
+  return s; }
+const TR_ATTRS=["placeholder","aria-label","title"];
+function trTree(root){ if(LANG!=="en"||!root) return;
+  if(root.nodeType===3){ const v=tr(root.nodeValue); if(v!==root.nodeValue) root.nodeValue=v; return; }
+  if(root.nodeType!==1) return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,{acceptNode:n=>n.nodeType===1&&/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.tagName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  root.querySelectorAll&&root.querySelectorAll("textarea[placeholder]").forEach(t=>{ const o=t.getAttribute("placeholder"); if(CYR.test(o)) t.setAttribute("placeholder",tr(o)); });
+  let n=root; do{ if(n.nodeType===3){ const v=tr(n.nodeValue); if(v!==n.nodeValue) n.nodeValue=v; } else for(const a of TR_ATTRS){ const o=n.getAttribute&&n.getAttribute(a); if(o&&CYR.test(o)) n.setAttribute(a,tr(o)); } }while((n=w.nextNode()));
+}
+if(LANG==="en"){ document.documentElement.lang="en"; document.title="Migraine Diary";
+  const startObs=()=>{ trTree(document.body); new MutationObserver(ms=>{ for(const m of ms){ if(m.type==="characterData") trTree(m.target); else m.addedNodes.forEach(trTree); } }).observe(document.body,{childList:true,subtree:true,characterData:true}); };
+  document.body?startObs():document.addEventListener("DOMContentLoaded",startObs); }
+function setLang(l){ try{ localStorage.setItem("migraine-lang",l); }catch(e){} location.reload(); }
+
 const DEFAULT_PILLS=[{id:"p1",name:"Ибупрофен",dose:"400 мг"},{id:"p2",name:"Суматриптан",dose:"50 мг"},{id:"p3",name:"Парацетамол",dose:"500 мг"}];
 
 let attacks=[]; let pills=null; let tab="home"; let calMonth=new Date(); calMonth.setDate(1);
@@ -322,7 +408,7 @@ function sorted(){ return [...attacks].sort((a,b)=>b.start.localeCompare(a.start
 function ongoing(){ return sorted().find(a=>!a.end); }
 function dur(a){ return (a.end?new Date(a.end):new Date())-new Date(a.start); }
 function daysOf(a){ const s=new Date(a.start); s.setHours(0,0,0,0); const e=a.end?new Date(a.end):new Date(); const out=[]; for(let d=new Date(s); d<=e && out.length<31; d.setDate(d.getDate()+1)) out.push(dayKey(d)); return out; }
-function plural(n,a,b,c){ n=Math.abs(n)%100; const n1=n%10; if(n>10&&n<20) return c; if(n1>1&&n1<5) return b; if(n1===1) return a; return c; }
+function plural(n,a,b,c){ if(LANG==="en"&&EN_PL[a]) return EN_PL[a][Math.abs(n)===1?0:1]; n=Math.abs(n)%100; const n1=n%10; if(n>10&&n<20) return c; if(n1>1&&n1<5) return b; if(n1===1) return a; return c; }
 const medLabel=m=>(m.name||"")+(m.dose?" "+m.dose:"");
 const ARROW=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 11 11 5M6 5h5v5"/></svg>`;
 const XICON=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m4 4 8 8M12 4l-8 8"/></svg>`;
@@ -488,7 +574,7 @@ function render(){
 }
 function header(){
   return `<div class="top"><div class="brand"><svg viewBox="200 200 624 624" fill="currentColor" aria-hidden="true"><path d="M 426.043,240.846 A 294 294 0 1 0 766.611,375.000 L 688.669,420.000 A 204 204 0 1 1 452.356,326.914 Z"/><circle cx="658" cy="280" r="65"/></svg>Мигрень</div>
-    <div class="hdr-btns"><button class="theme-btn" data-act="pills" id="pills-btn" aria-label="Мои таблетки">${PILL}<span>Таблетки</span></button></div></div>`;
+    <div class="hdr-btns"><button class="lang-btn" data-act="lang" id="lang-btn" aria-label="Language"><span class="${LANG==="ru"?"on":""}">RU</span><span class="${LANG==="en"?"on":""}">EN</span></button><button class="theme-btn" data-act="pills" id="pills-btn" aria-label="Мои таблетки">${PILL}<span>Таблетки</span></button></div></div>`;
 }
 function greeting(){ const h=new Date().getHours(); return h<5?"Доброй ночи":h<12?"Доброе утро":h<17?"Добрый день":h<23?"Добрый вечер":"Доброй ночи"; }
 const isPill=(m,p)=>m.pillId===p.id||(!m.pillId&&medLabel(m)===medLabel(p));
@@ -681,7 +767,7 @@ function csv(){
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
   const rows=[["Начало","Окончание","Длительность, мин","Сила","Локализация","Аура","Симптомы","Триггеры","Лекарства","Заметка"]];
   sorted().reverse().forEach(a=>rows.push([toLocalInput(new Date(a.start)).replace("T"," "),a.end?toLocalInput(new Date(a.end)).replace("T"," "):"",a.end?Math.round(dur(a)/60000):"",hasI(a.intensity)?a.intensity:"",zonesText(a),a.aura?"да":"нет",(a.symptoms||[]).join("; "),(a.triggers||[]).join("; "),(a.meds||[]).map(m=>`${medLabel(m)} ${fmtTime(new Date(m.time||a.start))} ${m.effect||""}`.trim()).join("; "),a.note]));
-  return "﻿"+rows.map(r=>r.map(q).join(";")).join("\r\n");
+  return "﻿"+rows.map((r,ri)=>r.map((c,i)=>q(ri>0&&i===r.length-1?c:tr(String(c??"")))).join(";")).join("\r\n");
 }
 let reportDays=90;
 function openReport(){
@@ -756,6 +842,7 @@ document.addEventListener("click",async ev=>{
   const act=t.dataset.act, id=t.dataset.id;
   if(t.dataset.tab && t.classList.contains("tab")){ tab=t.dataset.tab; render(); window.scrollTo(0,0); return; }
   if(act==="tab"){ tab=t.dataset.tab; render(); window.scrollTo(0,0); return; }
+  if(act==="lang"){ setLang(LANG==="ru"?"en":"ru"); return; }
   if(act==="start"){ await quickStart(); return; }
   if(act==="end"){ await quickEnd(id); return; }
   if(t.dataset.qint){ const a=attacks.find(x=>x.id===id); if(a) await persist({...a,intensity:+t.dataset.qint},true); return; }
@@ -776,7 +863,7 @@ document.addEventListener("click",async ev=>{
   if(act==="cal"){ calMonth.setMonth(calMonth.getMonth()+ +t.dataset.d); render(); return; }
   if(act==="report"){ openReport(); return; }
   if(t.dataset.rdays){ reportDays=+t.dataset.rdays; openReport(); return; }
-  if(act==="copy"){ const txt=reportText(reportDays); try{ await navigator.clipboard.writeText(txt); toast("Скопировано"); }catch(e){ const r=document.createRange(); r.selectNodeContents($("#report-text")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Текст выделен, скопируйте его вручную"); } return; }
+  if(act==="copy"){ const txt=tr(reportText(reportDays)); try{ await navigator.clipboard.writeText(txt); toast("Скопировано"); }catch(e){ const r=document.createRange(); r.selectNodeContents($("#report-text")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Текст выделен, скопируйте его вручную"); } return; }
   if(act==="csv"){ await saveFile(`migraine-${dayKey(new Date())}.csv`,csv(),"text/csv;charset=utf-8"); return; }
   if(act==="backup"){ await doBackup(); return; }
   if(act==="bk-now"){ if(await doBackup()) closeSheet(); return; }
