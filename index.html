@@ -217,6 +217,9 @@ pre.report{white-space:pre-wrap;font-family:var(--font);font-size:12.5px;backgro
 .x svg{width:12px;height:12px}
 .pillrow{display:grid;grid-template-columns:22px minmax(0,1.5fr) minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);border-radius:18px;padding:8px 8px 8px 12px}
 .pillrow svg{width:20px;height:20px}
+.addopt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:8px}
+.addopt input{padding:9px 12px;border-radius:12px;font-size:14px}
+.optrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);border-radius:16px;padding:8px 8px 8px 14px;font-size:15px}
 .pillrow input{padding:9px 10px;border-radius:12px}
 .hdr-btns{display:flex;gap:6px;align-items:center}
 input[type=time]{font:inherit}
@@ -349,7 +352,7 @@ const I18N={
 "Сейчас":"Now","Дневник":"Diary","Анализ":"Analysis","Таблетки":"Pills","Мигрень":"Migraine","Демо":"Demo","Закрыть":"Close",
 "Пример с вымышленными данными. Нажимайте что угодно: изменения не сохраняются.":"Sample with made-up data. Tap anything: changes aren’t saved.",
 "идёт сейчас":"in progress","идёт":"in progress","сегодня":"today","вчера":"yesterday","назад":"ago","без боли":"no pain","боль":"pain","мигрень":"migraine","таблетка":"pill","таблеток:":"pills:",
-"Дневник мигрени":"Migraine Diary","демо":"demo","не помогло":"didn’t help","Помогло":"Helped","Частично":"Partly","Не помогло":"Didn’t help","нет":"no","да":"yes",
+"Дневник мигрени":"Migraine Diary","Свой симптом":"Your own symptom","Свой триггер":"Your own trigger","Мои симптомы":"My symptoms","Мои триггеры":"My triggers","Добавить симптом":"Add a symptom","Добавить триггер":"Add a trigger","Вернуть стандартный список":"Restore default list","Такой пункт уже есть":"Already in the list","Впишите название":"Type a name","Список пуст. Добавьте первый пункт ниже.":"The list is empty. Add the first item below.","Удаление из списка не меняет старые записи: там всё останется как было.":"Removing an item doesn’t change past entries.","Стандартный список возвращён":"Default list restored","Добавлено":"Added","демо":"demo","не помогло":"didn’t help","Помогло":"Helped","Частично":"Partly","Не помогло":"Didn’t help","нет":"no","да":"yes",
 "Пн":"Mo","Вт":"Tu","Ср":"We","Чт":"Th","Пт":"Fr","Сб":"Sa","Вс":"Su",
 "Тошнота":"Nausea","Рвота":"Vomiting","Светобоязнь":"Light sensitivity","Звукобоязнь":"Sound sensitivity","Непереносимость запахов":"Smell sensitivity","Головокружение":"Dizziness","Пульсирующая боль":"Throbbing pain","Усиление при движении":"Worse with movement",
 "Стресс":"Stress","Недосып":"Too little sleep","Пересып":"Oversleeping","Пропуск еды":"Skipped meal","Алкоголь":"Alcohol","Кофеин":"Caffeine","Погода":"Weather","Долго у экрана":"Screen time","Менструация":"Menstruation","Духота":"Stuffy air","Яркий свет":"Bright light","Физнагрузка":"Exercise","Обезвоживание":"Dehydration",
@@ -384,7 +387,12 @@ const DEFAULT_PILLS=[{id:"p1",name:"Ибупрофен",dose:"400 мг"},{id:"p2
 let attacks=[]; let pills=null; let tab="home"; let calMonth=new Date(); calMonth.setDate(1);
 let store=null; let mode="local"; let editing=null; let confirmDel=false; let showTimes=false;
 let sheetKind=null; let pillsDraft=null; let backToForm=false; let timeEdit=null;
-const LS="migraine-diary-v1", LSP="migraine-pills-v1";
+const LS="migraine-diary-v1", LSP="migraine-pills-v1", LSL="migraine-lists-v1";
+let lists=null; let listKey=null; let listDraft=null;
+const LIST_DEF={symptoms:SYMPTOMS,triggers:TRIGGERS};
+const LIST_TXT={symptoms:{title:"Мои симптомы",ph:"Свой симптом",add:"Добавить симптом"},triggers:{title:"Мои триггеры",ph:"Свой триггер",add:"Добавить триггер"}};
+function getList(k){ return lists&&Array.isArray(lists[k])?lists[k]:LIST_DEF[k]; }
+function settingsDoc(){ const d={kind:"settings",pills:getPills()}; if(lists) d.lists=lists; return d; }
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -484,8 +492,8 @@ const Head3D={
 };
 
 /* ---------- storage ---------- */
-function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify(attacks)); if(pills) localStorage.setItem(LSP,JSON.stringify(pills)); }catch(e){} }
-function loadLocal(){ try{ const v=JSON.parse(localStorage.getItem(LS)||"[]"); if(Array.isArray(v)) attacks=v; const p=JSON.parse(localStorage.getItem(LSP)||"null"); if(Array.isArray(p)) pills=p; }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify(attacks)); if(pills) localStorage.setItem(LSP,JSON.stringify(pills)); if(lists) localStorage.setItem(LSL,JSON.stringify(lists)); }catch(e){} }
+function loadLocal(){ try{ const v=JSON.parse(localStorage.getItem(LS)||"[]"); if(Array.isArray(v)) attacks=v; const p=JSON.parse(localStorage.getItem(LSP)||"null"); if(Array.isArray(p)) pills=p; const l=JSON.parse(localStorage.getItem(LSL)||"null"); if(l&&typeof l==="object") lists=l; }catch(e){} }
 async function initStore(){
   if(!window.claude?.use){ render(); return; }
   try{
@@ -502,8 +510,8 @@ async function initStore(){
       if(first){ first=false;
         const ids=new Set(cloud.map(a=>a.id)); const pending=attacks.filter(a=>!ids.has(a.id));
         pending.forEach(a=>col.doc(a.id).set({...a,kind:"attack"}).catch(()=>{})); attacks=cloud.concat(pending);
-        if(set&&Array.isArray(set.pills)) pills=set.pills; else if(pills) col.doc("settings").set({kind:"settings",pills}).catch(()=>{});
-      } else { attacks=cloud; if(set&&Array.isArray(set.pills)) pills=set.pills; }
+        if(set&&Array.isArray(set.pills)) pills=set.pills; if(set&&set.lists) lists=set.lists; if((!set&&(pills||lists))||(set&&!set.lists&&lists)) col.doc("settings").set(settingsDoc()).catch(()=>{});
+      } else { attacks=cloud; if(set&&Array.isArray(set.pills)) pills=set.pills; if(set&&set.lists) lists=set.lists; }
       saveLocal(); if(!sheetKind) render();
     },()=>{ mode="local"; store=null; render(); });
   }catch(e){ render(); }
@@ -515,8 +523,10 @@ async function persist(a,quiet){
 }
 async function savePills(list){
   pills=list; saveLocal();
-  if(store){ try{ await store.doc("settings").set({kind:"settings",pills}); }catch(e){ toast("Нет связи с облаком, список сохранён на устройстве"); } }
+  if(store){ try{ await store.doc("settings").set(settingsDoc()); }catch(e){ toast("Нет связи с облаком, список сохранён на устройстве"); } }
 }
+async function saveLists(){ saveLocal(); if(store){ try{ await store.doc("settings").set(settingsDoc()); }catch(e){ toast("Нет связи с облаком, список сохранён на устройстве"); } } }
+function addOption(k,name){ name=(name||"").trim().replace(/\s+/g," "); if(!name){ toast("Впишите название"); return false; } const cur=getList(k); if(cur.some(x=>x.toLowerCase()===name.toLowerCase())){ toast("Такой пункт уже есть"); return false; } lists={...(lists||{}),[k]:[...cur,name]}; saveLists(); return name; }
 async function remove(id){
   attacks=attacks.filter(a=>a.id!==id); saveLocal(); render();
   if(store){ try{ await store.doc(id).delete(); }catch(e){} }
@@ -670,7 +680,8 @@ function viewStats(){
 /* ---------- sheets ---------- */
 function openSheet(kind,html){ sheetKind=kind; const same=kind===openSheet._last&&!!$("#sheet .sheet"); const sc=same?($("#sheet .sheet").scrollTop||0):0; openSheet._last=kind; $("#sheet").innerHTML=`<div class="sheet-bg${same?" noanim":""}" data-act="close-bg">${html}</div>`; const sh=$("#sheet .sheet"); if(sh){ if(same) sh.classList.add("noanim"); sh.scrollTop=sc; } }
 function closeSheet(){
-  if(sheetKind==="pills"&&backToForm&&editing){ backToForm=false; renderForm(); return; }
+  if((sheetKind==="pills"||sheetKind==="lists")&&backToForm&&editing){ backToForm=false; listKey=null; listDraft=null; renderForm(); return; }
+  listKey=null; listDraft=null;
   $("#sheet").innerHTML=""; sheetKind=null; openSheet._last=null; editing=null; timeEdit=null; render();
 }
 const closeBtn=`<button type="button" class="circ sm" data-act="close" aria-label="Закрыть">${XICON}</button>`;
@@ -678,7 +689,7 @@ const closeBtn=`<button type="button" class="circ sm" data-act="close" aria-labe
 /* details form */
 function openForm(a,times=false){ editing=JSON.parse(JSON.stringify(a)); editing.zones=[...zonesOf(editing)]; confirmDel=false; showTimes=times; openSheet._last=null; renderForm(); }
 function chipGroup(key,opts,multi=true){
-  const val=editing[key];
+  const val=editing[key]; if(multi&&Array.isArray(val)) opts=[...opts,...val.filter(v=>!opts.includes(v))];
   return `<div class="chips">${opts.map(o=>{ const on=multi?val.includes(o):val===o; return `<button type="button" class="chip" aria-pressed="${on}" data-chip="${key}" data-v="${esc(o)}" data-multi="${multi}">${esc(o)}</button>`; }).join("")}</div>`;
 }
 function renderForm(){
@@ -707,8 +718,8 @@ function renderForm(){
      <div class="zone-line">${e.zones.length?`Болит: <b>${esc(e.zones.join(", "))}</b>`:`<span class="muted">Зоны не выбраны</span>`}</div>
      <div class="chips">${ZONE_ORDER.map(i=>ZONES[i]).map(z=>`<button type="button" class="chip" aria-pressed="${e.zones.includes(z)}" data-zone="${esc(z)}">${esc(z)}</button>`).join("")}</div></div>
    <div class="field"><span class="lab">Аура</span><div class="chips"><button type="button" class="chip" data-aura="1" aria-pressed="${!!e.aura}">Была аура</button></div></div>
-   <div class="field"><span class="lab">Симптомы</span>${chipGroup("symptoms",SYMPTOMS)}</div>
-   <div class="field"><span class="lab">Возможные триггеры</span>${chipGroup("triggers",TRIGGERS)}</div>
+   <div class="field"><div class="spread"><span class="lab">Симптомы</span><button type="button" class="linkbtn" style="font-size:13px" data-editlist="symptoms">Изменить список</button></div>${chipGroup("symptoms",getList("symptoms"))}<div class="addopt"><input type="text" id="add-symptoms" data-addinput="symptoms" placeholder="${LIST_TXT.symptoms.ph}" enterkeyhint="done" autocomplete="off"><button type="button" class="btn sm" data-addopt="symptoms">+ Добавить</button></div></div>
+   <div class="field"><div class="spread"><span class="lab">Возможные триггеры</span><button type="button" class="linkbtn" style="font-size:13px" data-editlist="triggers">Изменить список</button></div>${chipGroup("triggers",getList("triggers"))}<div class="addopt"><input type="text" id="add-triggers" data-addinput="triggers" placeholder="${LIST_TXT.triggers.ph}" enterkeyhint="done" autocomplete="off"><button type="button" class="btn sm" data-addopt="triggers">+ Добавить</button></div></div>
    <div class="field"><label class="lab" for="f-note">Заметка</label><textarea id="f-note" placeholder="Что происходило, что помогло, самочувствие после">${esc(e.note)}</textarea></div>
    ${!isNew?(confirmDel?`<div class="row"><span>Удалить запись?</span><button type="button" class="btn danger" data-act="del-yes">Удалить</button><button type="button" class="btn" data-act="del-no">Отмена</button></div>`:`<button type="button" class="btn danger" data-act="del" style="align-self:flex-start">Удалить запись</button>`):""}
    <div class="sheet-actions"><button type="submit" class="save-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Сохранить</button></div>
@@ -748,6 +759,20 @@ function renderPills(){
     <div class="sheet-actions"><button type="button" class="save-btn" data-act="savepills"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Сохранить список</button></div></div>`);
 }
 function readPills(){ document.querySelectorAll("[data-pn]").forEach(el=>pillsDraft[+el.dataset.pn].name=el.value); document.querySelectorAll("[data-pd]").forEach(el=>pillsDraft[+el.dataset.pd].dose=el.value); }
+
+/* symptoms / triggers manager */
+function openList(k){ backToForm=!!editing; listKey=k; listDraft=[...getList(k)]; renderList(); }
+function renderList(){ const T=LIST_TXT[listKey];
+  openSheet("lists",`<div class="sheet" role="dialog" aria-label="${T.title}"><div class="grab"></div>
+    <div class="spread"><h2>${T.title}</h2>${closeBtn}</div>
+    <div class="muted" style="font-size:13.5px">Удаление из списка не меняет старые записи: там всё останется как было.</div>
+    <div class="list">${listDraft.map((v,i)=>`<div class="optrow"><span>${esc(v)}</span><button type="button" class="x" data-delopt="${i}" aria-label="Удалить">${XICON}</button></div>`).join("")||`<div class="muted" style="font-size:14px;padding:8px 4px">Список пуст. Добавьте первый пункт ниже.</div>`}</div>
+    <div class="card" style="gap:10px"><span class="lab">${T.add}</span><input type="text" id="nl-name" data-addinput="sheet" placeholder="${T.ph}" enterkeyhint="done" autocomplete="off"><button type="button" class="btn dark" data-act="addopt-sheet" style="align-self:flex-start">+ Добавить</button></div>
+    <button type="button" class="linkbtn" style="align-self:flex-start;font-size:13px" data-act="list-reset">Вернуть стандартный список</button>
+    <div class="sheet-actions"><button type="button" class="save-btn" data-act="savelist"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Сохранить список</button></div></div>`);
+}
+function draftAdd(){ const el=$("#nl-name"); const n=(el?.value||"").trim().replace(/\s+/g," "); if(!n) return false; if(listDraft.some(x=>x.toLowerCase()===n.toLowerCase())){ toast("Такой пункт уже есть"); return false; } listDraft.push(n); return true; }
+function formAdd(k){ readForm(); const el=$("#add-"+k); const n=addOption(k,el?.value); if(n){ if(!editing[k].includes(n)) editing[k].push(n); renderForm(); } else el?.focus(); }
 
 /* ---------- report ---------- */
 function reportText(days=90){
@@ -803,7 +828,7 @@ function openBackupReminder(){
    <button type="button" class="save-btn" data-act="bk-now"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 10 4 4 8-8"/></svg>Сохранить копию</button>
    <button type="button" class="btn" data-act="bk-later" style="align-self:center">Напомнить через 3 дня</button></div>`);
 }
-function backupJSON(){ return JSON.stringify({app:"migraine-diary",version:1,saved:new Date().toISOString(),attacks,pills:getPills()},null,1); }
+function backupJSON(){ return JSON.stringify({app:"migraine-diary",version:1,saved:new Date().toISOString(),attacks,pills:getPills(),...(lists?{lists}:{})},null,1); }
 /* ---------- actions ---------- */
 async function quickStart(){
   if(ongoing()) return;
@@ -855,7 +880,7 @@ document.addEventListener("click",async ev=>{
   if(act==="new"){ const on=ongoing(); if(on){ openForm(on); return; } const d=new Date(); d.setHours(d.getHours()-3,0,0,0); const e=new Date(d); e.setHours(e.getHours()+2); openForm(blank(d,e,null),true); return; }
   if(act==="edit"){ const a=attacks.find(x=>x.id===id); if(a) openForm(a); return; }
   if(act==="pills"){ openPills(false); return; }
-  if(act==="close"||act==="close-bg"){ if(sheetKind==="form"||sheetKind==="pills"&&backToForm) readForm(); closeSheet(); return; }
+  if(act==="close"||act==="close-bg"){ if(sheetKind==="form") readForm(); closeSheet(); return; }
   if(t.dataset.day){ const k=t.dataset.day; const list=sorted().filter(a=>daysOf(a).includes(k)||(a.meds||[]).some(m=>dayKey(new Date(m.time||a.start))===k));
     if(list.length===1){ openForm(list[0]); return; }
     if(list.length>1){ const d=new Date(k+"T12:00"); openSheet("day",`<div class="sheet" role="dialog" aria-label="Записи за день"><div class="grab"></div><div class="spread"><h2>${fmtDate(d)}</h2>${closeBtn}</div><div class="muted" style="font-size:14px">${list.length} ${plural(list.length,"запись","записи","записей")} в этот день</div><div class="list">${list.map(itemHtml).join("")}</div></div>`); }
@@ -877,6 +902,14 @@ document.addEventListener("click",async ev=>{
     if(act==="t-save"){ readTime(); if(timeEdit.end&&new Date(timeEdit.end)<new Date(timeEdit.start)){ toast("Конец раньше начала. Проверьте время."); return; } if(!timeEdit.end&&ongoing()&&ongoing().id!==timeEdit.id){ toast("Уже есть идущая мигрень"); return; } const a=attacks.find(x=>x.id===timeEdit.id); const upd={...a,start:timeEdit.start,end:timeEdit.end}; $("#sheet").innerHTML=""; sheetKind=null; timeEdit=null; await persist(upd); toast("Время сохранено"); return; }
     return;
   }
+  /* symptoms / triggers sheet */
+  if(sheetKind==="lists"){
+    if(t.dataset.delopt!==undefined){ listDraft.splice(+t.dataset.delopt,1); renderList(); return; }
+    if(act==="addopt-sheet"){ if(!$("#nl-name").value.trim()){ toast("Впишите название"); $("#nl-name").focus(); return; } if(draftAdd()){ renderList(); $("#nl-name")?.focus(); } return; }
+    if(act==="list-reset"){ listDraft=[...LIST_DEF[listKey]]; renderList(); toast("Стандартный список возвращён"); return; }
+    if(act==="savelist"){ draftAdd(); lists={...(lists||{}),[listKey]:listDraft}; await saveLists(); toast("Список сохранён"); closeSheet(); return; }
+    return;
+  }
   /* pills sheet */
   if(sheetKind==="pills"){
     if(t.dataset.delpill){ readPills(); pillsDraft.splice(+t.dataset.delpill,1); renderPills(); return; }
@@ -888,6 +921,8 @@ document.addEventListener("click",async ev=>{
   if(!editing) return;
   if(act==="showtimes"){ readForm(); showTimes=true; renderForm(); return; }
   if(act==="pills-from-form"){ readForm(); openPills(true); return; }
+  if(t.dataset.editlist){ readForm(); openList(t.dataset.editlist); return; }
+  if(t.dataset.addopt){ formAdd(t.dataset.addopt); return; }
   if(act==="del"){ readForm(); confirmDel=true; renderForm(); return; }
   if(act==="del-no"){ readForm(); confirmDel=false; renderForm(); return; }
   if(act==="del-yes"){ const i=editing.id; $("#sheet").innerHTML=""; sheetKind=null; editing=null; await remove(i); toast("Запись удалена"); return; }
@@ -905,6 +940,7 @@ document.addEventListener("click",async ev=>{
 });
 document.addEventListener("submit",async ev=>{
   if(ev.target.id!=="form") return; ev.preventDefault(); readForm();
+  for(const k of ["symptoms","triggers"]){ const v=($("#add-"+k)?.value||"").trim(); if(v){ const n=addOption(k,v)||getList(k).find(x=>x.toLowerCase()===v.toLowerCase().replace(/\s+/g," ")); if(n&&!editing[k].includes(n)) editing[k].push(n); } }
   const a=editing; a.side="";
   if(a.end && new Date(a.end)<new Date(a.start)){ toast("Конец раньше начала. Проверьте время."); return; }
   if(!a.end && ongoing() && ongoing().id!==a.id){ toast("Уже есть идущая мигрень. Укажите, когда закончилась эта."); return; }
@@ -915,11 +951,13 @@ document.addEventListener("change",async ev=>{
   try{ const d=JSON.parse(await ev.target.files[0].text()); if(!Array.isArray(d.attacks)) throw 0;
     const ids=new Set(attacks.map(a=>a.id)); let n=0; d.attacks.forEach(a=>{ if(a&&a.id&&a.start&&!ids.has(a.id)){ attacks.push(a); n++; } });
     if(Array.isArray(d.pills)&&d.pills.length) pills=d.pills;
+    if(d.lists&&typeof d.lists==="object") lists=d.lists;
     saveLocal(); closeSheet(); toast(n?`Восстановлено записей: ${n}`:"Новых записей в файле нет");
   }catch(e){ toast("Не удалось прочитать файл. Нужен файл копии из этого приложения."); }
   ev.target.value="";
 });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&sheetKind){ if(sheetKind==="form") readForm(); closeSheet(); } });
+document.addEventListener("keydown",e=>{ const ai=e.target&&e.target.dataset&&e.target.dataset.addinput; if(e.key==="Enter"&&ai){ e.preventDefault(); if(ai==="sheet"){ if(draftAdd()){ renderList(); $("#nl-name")?.focus(); } } else formAdd(ai); return; }
+  if(e.key==="Escape"&&sheetKind){ if(sheetKind==="form") readForm(); closeSheet(); } });
 setInterval(()=>{ if(ongoing() && !sheetKind && !drag && tab==="home") render(); },60000);
 
 
